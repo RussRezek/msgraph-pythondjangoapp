@@ -1,0 +1,30 @@
+<!-- Copyright (c) Microsoft Corporation.
+     Licensed under the MIT License. -->
+
+{% extends "tutorial/layout.html" %}
+{% block content %}
+<h1>AI Files</h1>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">File Name</th>
+      <th scope="col">Directory</th>
+      <th scope="col">ID</th>
+      <th scope="col">CreatedDate</th>
+
+    </tr>
+  </thead>
+  <tbody>
+    {% if ai_files %}
+      {% for ai_file in ai_files %}
+        <tr>
+          <td><a href="{{ ai_file.webUrl }}">{{ ai_file.name }}</a></td>
+          <td>{{ ai_file.ParentDirectory }}</td>
+          <td>{{ ai_file.id }}</td>
+          <td>{{ ai_file.createdDateTime }}</td>
+        </tr>
+      {% endfor %}
+    {% endif %}
+  </tbody>
+</table>
+{% endblock %}
