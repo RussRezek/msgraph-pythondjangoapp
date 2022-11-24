@@ -10,6 +10,7 @@
       <th scope="col">File Name</th>
       <th scope="col">Directory</th>
       <th scope="col">ID</th>
+      <th scope="col">Worksheet Name</th>
       <th scope="col">CreatedDate</th>
 
     </tr>
@@ -20,11 +21,33 @@
         <tr>
           <td><a href="{{ ai_file.webUrl }}">{{ ai_file.name }}</a></td>
           <td>{{ ai_file.ParentDirectory }}</td>
-          <td>{{ ai_file.id }}</td>
+          <td><a href="{% url 'file_data' ai_file.id ai_file.WorksheetName %}?file_name={{ ai_file.name | urlencode }}">{{ ai_file.id }}</a></td>
+          <!--td><a href="/file_data/{{ ai_file.id }}/{{ ai_file.WorksheetName}}/{{ ai_file.name}}">{{ ai_file.id }}</a></td-->
+          <td>{{ ai_file.WorksheetName }}</td>
           <td>{{ ai_file.createdDateTime }}</td>
         </tr>
       {% endfor %}
     {% endif %}
   </tbody>
 </table>
+<table>
+  <tr>
+    <td>
+      <form action="/get_all_reading_iready" method="get">
+      <input type="submit" value="Save All Reading iReady to DB" />
+      </form>
+    </td>
+    <td>
+      <form action="/get_all_math_iready" method="get">
+      <input type="submit" value="Save All Math iReady to DB" />
+      </form>
+    </td>
+    <td>
+      <form action="/get_all_eligibility" method="get">
+      <input type="submit" value="Save Eligibility to DB" />
+      </form>
+    </td>
+  </tr>
+</table>
+
 {% endblock %}

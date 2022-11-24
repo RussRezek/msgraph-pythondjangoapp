@@ -1,0 +1,26 @@
+<!-- Copyright (c) Microsoft Corporation.
+     Licensed under the MIT License. -->
+
+{% extends "tutorial/layout.html" %}
+{% block content %}
+<h3>{{ file_name }}</h3>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col"></th>
+      <th scope="col"></th>
+      <th scope="col"></th>
+      <th scope="col"></th>
+      <th scope="col"></th>
+
+    </tr>
+  </thead>
+  <tbody>
+    {% if file_data %}
+      {% for line in file_data %}
+          {{ line }} <br>
+      {% endfor %}
+    {% endif %}
+  </tbody>
+</table>
+{% endblock %}

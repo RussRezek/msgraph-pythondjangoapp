@@ -14,4 +14,8 @@ urlpatterns = [
   path('callback', views.callback, name='callback'),
   path('calendar/new', views.new_event, name='newevent'),
   path('ai_files', views.ai_files, name='ai_files'),
+  path('file_data/<str:file_id>/<str:worksheet_name>', views.file_data, name = 'file_data'),
+  path('get_all_reading_iready', views.get_all_reading_iready, name='get_all_reading_iready'),
+  path('get_all_math_iready', views.get_all_math_iready, name='get_all_math_iready'),
+  path('get_all_eligibility', views.get_all_eligibility, name='get_all_eligibility')
 ]

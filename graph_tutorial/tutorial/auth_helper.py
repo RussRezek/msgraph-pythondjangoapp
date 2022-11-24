@@ -23,7 +23,7 @@ def save_cache(request, cache):
 
 def get_msal_app(cache=None):
     # Initialize the MSAL confidential client
-    auth_app = msal.ConfidentialClientApplication(
+    auth_app = msal.ConfidentialClientApplication (
         settings['app_id'],
         authority=settings['authority'],
         client_credential=settings['app_secret'],
@@ -84,3 +84,22 @@ def remove_user_and_token(request):
 
     if 'user' in request.session:
         del request.session['user']
+
+
+# CUSTOM METHOD TO GET TOKEN USING CLIENT SECRET ONLY, NO USER LOGIN CREDENTIALS USED
+def get_token_for_app(request):
+
+    cache = load_cache(request)
+
+    auth_app = msal.ConfidentialClientApplication(settings['app_id'],
+        authority=settings['authority'],
+        client_credential=settings['app_secret'],
+        token_cache=cache)
+    
+    result = auth_app.acquire_token_silent(settings['app_scope'], account=None)
+    if not result:
+        result = auth_app.acquire_token_for_client(scopes=settings['app_scope'])
+
+    save_cache(request, cache)
+
+    return result['access_token'] if result is not None else None

@@ -2,13 +2,20 @@
 # Licensed under the MIT License.
 
 from datetime import datetime, timedelta
-from django.shortcuts import render
+
+from dateutil import parser, tz
 from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import reverse
-from dateutil import tz, parser
-from tutorial.auth_helper import (get_sign_in_flow, get_token_from_code, store_user,
-    remove_user_and_token, get_token)
-from tutorial.graph_helper import get_filelist, get_user, get_iana_from_windows, get_calendar_events, create_event
+from tutorial.auth_helper import (get_sign_in_flow, get_token,
+                                  get_token_from_code, get_token_for_app,
+                                  remove_user_and_token, store_user)
+from tutorial.graph_helper import (create_event, get_calendar_events,
+                                   get_file_data, get_filelist,
+                                   get_iana_from_windows, get_user,
+                                   get_worksheets)
+from tutorial.sqlalchemy_models import sql_models as sm
+
 
 def initialize_context(request):
     context = {}
@@ -104,9 +111,9 @@ def calendar(request):
 
 def ai_files(request):
     context = initialize_context(request)
-    user = context['user']
-    if not user['is_authenticated']:
-        return HttpResponseRedirect(reverse('signin'))
+    #user = context['user']
+    #if not user['is_authenticated']:
+    #    return HttpResponseRedirect(reverse('signin'))
 
     #SET THE DRIVE AND DIRECTORY FOLDERS THAT WE WILL NEED
 
@@ -117,36 +124,19 @@ def ai_files(request):
     directory_list = ['root:/IT Solutions/Data Reports - Palm Beach:/children',
                     'root:/IT Solutions/Data Reports - New York:/children']
 
-    # Load the user's time zone
-    # Microsoft Graph can return the user's time zone as either
-    # a Windows time zone name or an IANA time zone identifier
-    # Python datetime requires IANA, so convert Windows to IANA
-    time_zone = get_iana_from_windows(user['timeZone'])
-    tz_info = tz.gettz(time_zone)
-
-    # Get midnight today in user's time zone
-    today = datetime.now(tz_info).replace(
-        hour=0,
-        minute=0,
-        second=0,
-        microsecond=0)
-
-    # Based on today, get the start of the week (Sunday)
-    if today.weekday() != 6:
-        start = today - timedelta(days=today.isoweekday())
-    else:
-        start = today
-
-    token = get_token(request)
+    #token = get_token(request)
+    token = get_token_for_app(request)
 
     for directory in directory_list:
         files = get_filelist(token,drive,directory)
 
         if files:
             for file in files['value']:
-                createdDate = parser.parse(file['createdDateTime'])
-                file['createdDateTime'] = createdDate.strftime('%Y-%m-%d %H:%M:%S')
+                created_date = parser.parse(file['createdDateTime'])
+                file['createdDateTime'] = created_date.strftime('%Y-%m-%d %H:%M:%S')
                 file['ParentDirectory'] = file['parentReference']['path'].rsplit('/', 1)[-1]
+                worksheet_data = get_worksheets(token,drive,file['id'])
+                file['WorksheetName'] = worksheet_data['WorksheetName']
             if 'ai_files' in context:
                 for new_file in files['value']:
                     context['ai_files'].append(new_file)
@@ -156,6 +146,233 @@ def ai_files(request):
 
     return render(request, 'tutorial/ai_files.html', context)
 
+def file_data(request, file_id, worksheet_name):
+    context = initialize_context(request)
+
+    #SET THE DRIVE AND DIRECTORY FOLDERS THAT WE WILL NEED
+    drive = '/drives/b!j7GCe-Two0-73phJMu9XqviV7CunZMpEm0xZVyOP271WIaR6JXsIQKeBR7P0r-37/'
+
+    token = get_token_for_app(request)
+
+    context['file_data'] = get_file_data(token,drive,file_id,worksheet_name)['values']
+    context['file_name'] = request.GET['file_name']
+
+    return render(request, 'tutorial/file_data.html', context)
+
+def get_all_math_iready(request):
+    context = initialize_context(request)
+
+    drive = '/drives/b!j7GCe-Two0-73phJMu9XqviV7CunZMpEm0xZVyOP271WIaR6JXsIQKeBR7P0r-37/'
+
+    directory_list = ['root:/IT Solutions/Data Reports - Palm Beach:/children',
+                    'root:/IT Solutions/Data Reports - New York:/children']
+
+    token = get_token_for_app(request)
+    file_info_list = []
+    file_dict = {}
+
+    for directory in directory_list:
+        files = get_filelist(token,drive,directory)
+
+        if files:
+            for file in files['value']:
+                file_dict['FileName'] = file['name']
+                file_dict['id'] = file['id']
+                created_date = parser.parse(file['createdDateTime'])
+                file['createdDateTime'] = created_date.strftime('%Y-%m-%d %H:%M:%S')
+                file_dict['createdDateTime'] = created_date.strftime('%Y-%m-%d %H:%M:%S')
+                file['ParentDirectory'] = file['parentReference']['path'].rsplit('/', 1)[-1]
+                file_dict['ParentDirectory'] = file['parentReference']['path'].rsplit('/', 1)[-1]
+                worksheet_data = get_worksheets(token,drive,file['id'])
+                file['WorksheetName'] = worksheet_data['WorksheetName']
+                file_dict['WorksheetName'] = worksheet_data['WorksheetName']
+
+                if '_math_' in file_dict['FileName']:
+                    file_info_list.append(file_dict.copy())
+
+    file_data_tab =[]
+    for file in file_info_list:
+        if 'file_data' not in context:
+            file_data_tab = get_file_data(token,drive,file['id'],file['WorksheetName'])['values']
+            for row in file_data_tab:
+                row.insert(0, 'Math iReady')
+                row.insert(0, file['ParentDirectory'])
+            context['file_data'] = file_data_tab
+        else:
+            file_data_tab = get_file_data(token,drive,file['id'],file['WorksheetName'])['values']
+            for row in file_data_tab:
+                row.insert(0, 'Math iReady')
+                row.insert(0, file['ParentDirectory'])
+            context['file_data'] += file_data_tab
+    for idx, record in enumerate (context['file_data']):
+        if not isinstance(record[5], str): #StudentGrade
+            record[5] = str(record[5])
+        if isinstance(record[45], str): #DiagnosticGain
+            record[45] = None
+        if isinstance(record[48], str): #[PercentProgresstoAnnualTypicalGrowth(%)]
+            record[48] = None
+        if isinstance(record[49], str): #[PercentProgresstoAnnualStretchGrowth(%)]
+            record[49] = None
+    for idx, record in enumerate (context['file_data']):
+        if record[4] == 'Student ID':
+            context['file_data'].pop(idx)
+
+    db = sm.db
+
+    trans = db.connection.begin()
+    db.connection.execute("TRUNCATE TABLE AI.EligibiltyStaging")
+    trans.commit()
+
+    #for row in context['file_data']:
+    for row in context['file_data']:
+        db.connection.execute(sm.MathiReady.__table__.insert().values(row))
+
+    lp = sm.LoadProduction()
+    lp.load_production_tables()
+
+    return render(request, 'tutorial/file_data.html', context)
+
+def get_all_reading_iready(request):
+    context = initialize_context(request)
+
+    drive = '/drives/b!j7GCe-Two0-73phJMu9XqviV7CunZMpEm0xZVyOP271WIaR6JXsIQKeBR7P0r-37/'
+
+    directory_list = ['root:/IT Solutions/Data Reports - Palm Beach:/children',
+                    'root:/IT Solutions/Data Reports - New York:/children']
+
+    token = get_token_for_app(request)
+    file_info_list = []
+    file_dict = {}
+
+    for directory in directory_list:
+        files = get_filelist(token,drive,directory)
+
+        if files:
+            for file in files['value']:
+                file_dict['FileName'] = file['name']
+                file_dict['id'] = file['id']
+                created_date = parser.parse(file['createdDateTime'])
+                file['createdDateTime'] = created_date.strftime('%Y-%m-%d %H:%M:%S')
+                file_dict['createdDateTime'] = created_date.strftime('%Y-%m-%d %H:%M:%S')
+                file['ParentDirectory'] = file['parentReference']['path'].rsplit('/', 1)[-1]
+                file_dict['ParentDirectory'] = file['parentReference']['path'].rsplit('/', 1)[-1]
+                worksheet_data = get_worksheets(token,drive,file['id'])
+                file['WorksheetName'] = worksheet_data['WorksheetName']
+                file_dict['WorksheetName'] = worksheet_data['WorksheetName']
+
+                if '_ela_' in file_dict['FileName']:
+                    file_info_list.append(file_dict.copy())
+
+    file_data_tab =[]
+    for file in file_info_list:
+        if 'file_data' not in context:
+            file_data_tab = get_file_data(token,drive,file['id'],file['WorksheetName'])['values']
+            for row in file_data_tab:
+                row.insert(0, 'ELA iReady')
+                row.insert(0, file['ParentDirectory'])
+            context['file_data'] = file_data_tab
+        else:
+            file_data_tab = get_file_data(token,drive,file['id'],file['WorksheetName'])['values']
+            for row in file_data_tab:
+                row.insert(0, 'ELA iReady')
+                row.insert(0, file['ParentDirectory'])
+            context['file_data'] += file_data_tab
+    for idx, record in enumerate (context['file_data']):
+        if not isinstance(record[5], str): #StudentGrade
+            record[5] = str(record[5])
+        if isinstance(record[54], str): #DiagnosticGain
+            record[54] = None
+        if isinstance(record[57], str): #[PercentProgresstoAnnualTypicalGrowth(%)]
+            record[57] = None
+        if isinstance(record[58], str): #[PercentProgresstoAnnualStretchGrowth(%)]
+            record[58] = None
+    for idx, record in enumerate (context['file_data']):
+        if record[4] == 'Student ID':
+            context['file_data'].pop(idx)
+
+    db = sm.db
+
+    trans = db.connection.begin()
+    db.connection.execute("TRUNCATE TABLE AI.ReadingIreadyStaging")
+    trans.commit()
+
+
+    #for row in context['file_data']:
+    for row in context['file_data']:
+        db.connection.execute(sm.ReadingiReady.__table__.insert().values(row))
+
+    lp = sm.LoadProduction()
+    lp.load_production_tables()
+
+    return render(request, 'tutorial/file_data.html', context)
+
+def get_all_eligibility(request):
+    context = initialize_context(request)
+
+    drive = '/drives/b!j7GCe-Two0-73phJMu9XqviV7CunZMpEm0xZVyOP271WIaR6JXsIQKeBR7P0r-37/'
+
+    directory_list = ['root:/IT Solutions/Data Reports - Palm Beach:/children',
+                    'root:/IT Solutions/Data Reports - New York:/children']
+
+    token = get_token_for_app(request)
+    file_info_list = []
+    file_dict = {}
+
+    for directory in directory_list:
+        files = get_filelist(token,drive,directory)
+
+        if files:
+            for file in files['value']:
+                file_dict['FileName'] = file['name']
+                file_dict['id'] = file['id']
+                created_date = parser.parse(file['createdDateTime'])
+                file['createdDateTime'] = created_date.strftime('%Y-%m-%d %H:%M:%S')
+                file_dict['createdDateTime'] = created_date.strftime('%Y-%m-%d %H:%M:%S')
+                file['ParentDirectory'] = file['parentReference']['path'].rsplit('/', 1)[-1]
+                file_dict['ParentDirectory'] = file['parentReference']['path'].rsplit('/', 1)[-1]
+                worksheet_data = get_worksheets(token,drive,file['id'])
+                file['WorksheetName'] = worksheet_data['WorksheetName']
+                file_dict['WorksheetName'] = worksheet_data['WorksheetName']
+
+                if ' Eligibility ' in file_dict['FileName']:
+                    file_info_list.append(file_dict.copy())
+
+    file_data_tab =[]
+    for file in file_info_list:
+        if 'file_data' not in context:
+            file_data_tab = get_file_data(token,drive,file['id'],file['WorksheetName'])['values']
+            for row in file_data_tab:
+                row.insert(0, 'Eligibilty')
+                row.insert(0, file['ParentDirectory'])
+            context['file_data'] = file_data_tab
+        else:
+            file_data_tab = get_file_data(token,drive,file['id'],file['WorksheetName'])['values']
+            for row in file_data_tab:
+                row.insert(0, 'Eligibility')
+                row.insert(0, file['ParentDirectory'])
+            context['file_data'] += file_data_tab
+    for idx, record in enumerate (context['file_data']):
+        if not isinstance(record[6], str): #StudentGrade
+            record[6] = str(record[6])
+    for idx, record in enumerate (context['file_data']):
+        if record[2] == 'ReferralStatus':
+            context['file_data'].pop(idx)
+
+    db = sm.db
+
+    trans = db.connection.begin()
+    db.connection.execute("TRUNCATE TABLE AI.EligibilityStaging")
+    trans.commit() 
+
+    #for row in context['file_data']:
+    for row in context['file_data']:
+        db.connection.execute(sm.Eligibility.__table__.insert().values(row))
+
+    lp = sm.LoadProduction()
+    lp.load_production_tables()
+
+
+    return render(request, 'tutorial/file_data.html', context)
 
 def new_event(request):
     context = initialize_context(request)

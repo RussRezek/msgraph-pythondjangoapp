@@ -67,6 +67,55 @@ def get_filelist(token,drive,directory):
     # Return the JSON result
     return files.json()
 
+def get_worksheets(token,drive,file_id):
+    # Set headers
+    headers = {
+        'Authorization': f'Bearer {token}',
+    }
+
+    # Configure query parameters to
+    # modify the results
+    query_params = {
+
+    }
+
+    worksheets = requests.get(f'{GRAPH_URL}{drive}/items/{file_id}/workbook/worksheets',
+        headers=headers,
+        params=query_params,
+        timeout = 100
+        )
+
+    worksheets = worksheets.json()
+
+    worksheet_data = {}
+    worksheet_data['WorksheetID'] = worksheets['value'][0]['id']
+    worksheet_data['WorksheetName'] = worksheets['value'][0]['name']
+
+
+    # Return the first WORKSHEET result
+    return worksheet_data
+
+def get_file_data(token,drive,file_id,worksheet_name):
+    # Set headers
+    headers = {
+        'Authorization': f'Bearer {token}',
+    }
+
+    # Configure query parameters to
+    # modify the results
+    query_params = {
+
+    }
+
+    worksheet_data = requests.get(f'{GRAPH_URL}{drive}/items/{file_id}/workbook/worksheets/{worksheet_name}/usedRange/?$select=values',
+        headers=headers,
+        params=query_params,
+        timeout = 100
+        )
+
+    # Return the first WORKSHEET result
+    return worksheet_data.json()
+
 
 def create_event(token, subject, start, end, attendees=None, body=None, timezone='UTC'):
     # Create an event object

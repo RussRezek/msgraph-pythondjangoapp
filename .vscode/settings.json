@@ -2,7 +2,8 @@
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true,
     "python.linting.pylintArgs": [
-        "--rcfile=graph_tutorial/.pylintrc"
+        "--rcfile=graph_tutorial/.pylintrc",
+        "--max-line-length=150"
     ],
     "cSpell.words": [
         "calendarview",
@@ -12,5 +13,6 @@
         "signin",
         "signout",
         "timespec"
-    ]
+    ],
+
 }
