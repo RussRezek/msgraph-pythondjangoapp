@@ -7,14 +7,14 @@ from dateutil import parser, tz
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from tutorial.auth_helper import (get_sign_in_flow, get_token,
+from graph_connector_app.auth_helper import (get_sign_in_flow, get_token,
                                   get_token_from_code, get_token_for_app,
                                   remove_user_and_token, store_user)
-from tutorial.graph_helper import (create_event, get_calendar_events,
+from graph_connector_app.graph_helper import (create_event, get_calendar_events,
                                    get_file_data, get_filelist,
                                    get_iana_from_windows, get_user,
                                    get_worksheets)
-from tutorial.sqlalchemy_models import sql_models as sm
+from graph_connector_app.sqlalchemy_models import sql_models as sm
 
 
 def initialize_context(request):
@@ -34,7 +34,7 @@ def initialize_context(request):
 def home(request):
     context = initialize_context(request)
 
-    return render(request, 'tutorial/home.html', context)
+    return render(request, 'graph_connector_app/home.html', context)
 
 def sign_in(request):
     # Get the sign-in flow
@@ -107,7 +107,7 @@ def calendar(request):
 
         context['events'] = events['value']
 
-    return render(request, 'tutorial/calendar.html', context)
+    return render(request, 'graph_connector_app/calendar.html', context)
 
 def ai_files(request):
     context = initialize_context(request)
@@ -144,7 +144,7 @@ def ai_files(request):
                 context['ai_files'] = files['value']
 
 
-    return render(request, 'tutorial/ai_files.html', context)
+    return render(request, 'graph_connector_app/ai_files.html', context)
 
 def file_data(request, file_id, worksheet_name):
     context = initialize_context(request)
@@ -157,7 +157,7 @@ def file_data(request, file_id, worksheet_name):
     context['file_data'] = get_file_data(token,drive,file_id,worksheet_name)['values']
     context['file_name'] = request.GET['file_name']
 
-    return render(request, 'tutorial/file_data.html', context)
+    return render(request, 'graph_connector_app/file_data.html', context)
 
 def get_all_math_iready(request):
     context = initialize_context(request)
@@ -230,7 +230,7 @@ def get_all_math_iready(request):
     lp = sm.LoadProduction()
     lp.load_production_tables()
 
-    return render(request, 'tutorial/file_data.html', context)
+    return render(request, 'graph_connector_app/file_data.html', context)
 
 def get_all_reading_iready(request):
     context = initialize_context(request)
@@ -304,7 +304,7 @@ def get_all_reading_iready(request):
     lp = sm.LoadProduction()
     lp.load_production_tables()
 
-    return render(request, 'tutorial/file_data.html', context)
+    return render(request, 'graph_connector_app/file_data.html', context)
 
 def get_all_eligibility(request):
     context = initialize_context(request)
@@ -372,7 +372,7 @@ def get_all_eligibility(request):
     lp.load_production_tables()
 
 
-    return render(request, 'tutorial/file_data.html', context)
+    return render(request, 'graph_connector_app/file_data.html', context)
 
 def new_event(request):
     context = initialize_context(request)
@@ -392,7 +392,7 @@ def new_event(request):
                     'debug': 'The subject, start, and end fields are required.'
                 }
             ]
-            return render(request, 'tutorial/newevent.html', context)
+            return render(request, 'graph_connector_app/newevent.html', context)
 
         attendees = None
         if request.POST['ev-attendees']:
@@ -414,4 +414,4 @@ def new_event(request):
         return HttpResponseRedirect(reverse('calendar'))
     else:
         # Render the form
-        return render(request, 'tutorial/newevent.html', context)
+        return render(request, 'graph_connector_app/newevent.html', context)

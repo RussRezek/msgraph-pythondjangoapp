@@ -8,11 +8,11 @@
             "name": "Python: Django",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/graph_tutorial/manage.py",
+            "program": "${workspaceFolder}/graph_api/manage.py",
             "args": [
                 "runserver"
             ],
-            "cwd": "${workspaceFolder}/graph_tutorial/",
+            "cwd": "${workspaceFolder}/graph_api/",
             "django": true,
             "justMyCode": true
         }

@@ -14,7 +14,7 @@
       href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/11.0.0/css/fabric.min.css"
     />
     {% load static %}
-    <link rel="stylesheet" href="{% static 'tutorial/app.css' %}">
+    <link rel="stylesheet" href="{% static 'graph_connector_app/app.css' %}">
   </head>
 
   <body>
@@ -61,7 +61,7 @@
                   {% if user.avatar %}
                     <img src="{{ user.avatar }}" class="rounded-circle align-self-center mr-2" style="width: 32px;">
                   {% else %}
-                    <img src="{% static 'tutorial/no-profile-photo.png' %}" class="rounded-circle align-self-center mr-2" style="width: 32px;">
+                    <img src="{% static 'graph_connector_app/no-profile-photo.png' %}" class="rounded-circle align-self-center mr-2" style="width: 32px;">
                   {% endif %}
                 </a>
                 <div class="dropdown-menu dropdown-menu-right">

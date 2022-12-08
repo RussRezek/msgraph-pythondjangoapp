@@ -1,8 +1,9 @@
 {
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true,
+    "python.defaultInterpreterPath": "/opt/virtualenv/graph-api/bin/python",
     "python.linting.pylintArgs": [
-        "--rcfile=graph_tutorial/.pylintrc",
+        "--rcfile=graph_main_app/.pylintrc",
         "--max-line-length=150"
     ],
     "cSpell.words": [
