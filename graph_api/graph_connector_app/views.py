@@ -16,6 +16,19 @@ from graph_connector_app.graph_helper import (create_event, get_calendar_events,
                                    get_worksheets)
 from graph_connector_app.sqlalchemy_models import sql_models as sm
 
+#SET DRIVE AND DIRECTORY LIST
+
+drive = '/drives/b!j7GCe-Two0-73phJMu9XqviV7CunZMpEm0xZVyOP271WIaR6JXsIQKeBR7P0r-37/'
+#directory_list = {'root:/IT Solutions/Data Reports - Broward:/children'
+#               ,'root:/IT Solutions/Data Reports - Charlotte-Mecklenburg:/children'
+#               ,'root:/IT Solutions/Data Reports - Delaware:/children'
+#               ,'root:/IT Solutions/Data Reports - New York:/children'
+#               ,'root:/IT Solutions/Data Reports - Palm Beach:/children'
+#               ,'root:/IT Solutions/Data Reports - Philadelphia:/children' 
+#               
+directory_list = ['root:/IT Solutions/Data Reports - Philadelphia:/children']
+
+
 
 def initialize_context(request):
     context = {}
@@ -117,13 +130,6 @@ def ai_files(request):
 
     #SET THE DRIVE AND DIRECTORY FOLDERS THAT WE WILL NEED
 
-    drive = '/drives/b!j7GCe-Two0-73phJMu9XqviV7CunZMpEm0xZVyOP271WIaR6JXsIQKeBR7P0r-37/'
-
-    #directory_list = {'root:/IT Solutions/Data Reports - Palm Beach:/children'
-    #               ,'root:/IT Solutions/Data Reports - New York:/children'}
-    directory_list = ['root:/IT Solutions/Data Reports - Palm Beach:/children',
-                    'root:/IT Solutions/Data Reports - New York:/children']
-
     #token = get_token(request)
     token = get_token_for_app(request)
 
@@ -149,9 +155,6 @@ def ai_files(request):
 def file_data(request, file_id, worksheet_name):
     context = initialize_context(request)
 
-    #SET THE DRIVE AND DIRECTORY FOLDERS THAT WE WILL NEED
-    drive = '/drives/b!j7GCe-Two0-73phJMu9XqviV7CunZMpEm0xZVyOP271WIaR6JXsIQKeBR7P0r-37/'
-
     token = get_token_for_app(request)
 
     context['file_data'] = get_file_data(token,drive,file_id,worksheet_name)['values']
@@ -161,11 +164,6 @@ def file_data(request, file_id, worksheet_name):
 
 def get_all_math_iready(request):
     context = initialize_context(request)
-
-    drive = '/drives/b!j7GCe-Two0-73phJMu9XqviV7CunZMpEm0xZVyOP271WIaR6JXsIQKeBR7P0r-37/'
-
-    directory_list = ['root:/IT Solutions/Data Reports - Palm Beach:/children',
-                    'root:/IT Solutions/Data Reports - New York:/children']
 
     token = get_token_for_app(request)
     file_info_list = []
@@ -220,7 +218,7 @@ def get_all_math_iready(request):
     db = sm.db
 
     trans = db.connection.begin()
-    db.connection.execute("TRUNCATE TABLE AI.EligibiltyStaging")
+    db.connection.execute("TRUNCATE TABLE AI.MathIreadyStaging")
     trans.commit()
 
     #for row in context['file_data']:
@@ -234,11 +232,6 @@ def get_all_math_iready(request):
 
 def get_all_reading_iready(request):
     context = initialize_context(request)
-
-    drive = '/drives/b!j7GCe-Two0-73phJMu9XqviV7CunZMpEm0xZVyOP271WIaR6JXsIQKeBR7P0r-37/'
-
-    directory_list = ['root:/IT Solutions/Data Reports - Palm Beach:/children',
-                    'root:/IT Solutions/Data Reports - New York:/children']
 
     token = get_token_for_app(request)
     file_info_list = []
@@ -260,7 +253,7 @@ def get_all_reading_iready(request):
                 file['WorksheetName'] = worksheet_data['WorksheetName']
                 file_dict['WorksheetName'] = worksheet_data['WorksheetName']
 
-                if '_ela_' in file_dict['FileName']:
+                if '_ela' in file_dict['FileName']:
                     file_info_list.append(file_dict.copy())
 
     file_data_tab =[]
@@ -309,11 +302,6 @@ def get_all_reading_iready(request):
 def get_all_eligibility(request):
     context = initialize_context(request)
 
-    drive = '/drives/b!j7GCe-Two0-73phJMu9XqviV7CunZMpEm0xZVyOP271WIaR6JXsIQKeBR7P0r-37/'
-
-    directory_list = ['root:/IT Solutions/Data Reports - Palm Beach:/children',
-                    'root:/IT Solutions/Data Reports - New York:/children']
-
     token = get_token_for_app(request)
     file_info_list = []
     file_dict = {}
@@ -334,7 +322,7 @@ def get_all_eligibility(request):
                 file['WorksheetName'] = worksheet_data['WorksheetName']
                 file_dict['WorksheetName'] = worksheet_data['WorksheetName']
 
-                if ' Eligibility ' in file_dict['FileName']:
+                if 'Eligibility' in file_dict['FileName']:
                     file_info_list.append(file_dict.copy())
 
     file_data_tab =[]
