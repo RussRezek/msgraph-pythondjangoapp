@@ -106,3 +106,6 @@ venv.bak/
 # OAuth settings
 oauth_settings.yml
 oath_settings_ORIGS.yml
+
+#SQL Achelmy Settings
+settings.ini
