@@ -29,9 +29,9 @@ jobs:
       
       - name: Install SQL Drivers
         run: |
-          apt-get update
-          ACCEPT_EULA=Y apt-get install -y msodbcsql18
-          ACCEPT_EULA=Y apt-get install -y mssql-tools18
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18
+          sudo ACCEPT_EULA=Y apt-get install -y mssql-tools18
       
       - name: Install dependencies
         run: pip install -r graph_api/requirements.txt
