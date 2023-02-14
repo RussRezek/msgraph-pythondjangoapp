@@ -27,6 +27,12 @@ jobs:
           python -m venv antenv
           source antenv/bin/activate
       
+      - name: Install SQL Drivers
+        run: |
+          apt-get update
+          ACCEPT_EULA=Y apt-get install -y msodbcsql18
+          ACCEPT_EULA=Y apt-get install -y mssql-tools18
+      
       - name: Install dependencies
         run: pip install -r graph_api/requirements.txt
         
