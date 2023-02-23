@@ -41,6 +41,7 @@ jobs:
       - name: Copy settings file
         run: |
           cp oauth_settings.example.yml oauth_settings.yml
+          echo $MY_VARIABLE > settings.ini
       
       - name: Install dependencies
         run: |
