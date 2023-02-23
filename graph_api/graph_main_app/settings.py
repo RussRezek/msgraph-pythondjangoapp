@@ -74,11 +74,26 @@ WSGI_APPLICATION = 'graph_main_app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-DATABASES = {
+"""DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
+}
+"""
+
+DATABASES = {
+    "default": {
+        "ENGINE": "mssql",
+        "NAME": "LBGraphAPIConnector",
+        "USER": "russell.rezek",
+        "PASSWORD": "REDACTED",
+        "HOST": "216.230.125.152",
+        "PORT": "1433",
+        "OPTIONS": {"driver": "ODBC Driver 18 for SQL Server", 
+                    "extra_params": 'Encrypt=yes;TrustServerCertificate=yes;',
+            },
+    },
 }
 
 
