@@ -10,13 +10,6 @@ from pathlib import Path
 Config = configparser.ConfigParser()
 
 #CONFIG
-
-# create a Path object with the path to the file
-path = Path('./settings.ini')
-if (path.is_file() == False):
-    with open('settings.ini', 'w') as f:
-        print(os.environ['SQL_ALCHEMY_SETTINGS'], file=f)  # Python 3.x
-            
 working_directory = os.getcwd()
 Config.read('./settings.ini')
 
