@@ -40,7 +40,8 @@ jobs:
 
       - name: Copy settings file
         run: |
-          cp oauth_settings.example.yml oauth_settings.yml
+          echo $OAUTH_SETTINGS > oauth_settings.yml
+          echo $SQL_ALCHEMY_SETTINGS > settings2.ini
       
       - name: Install dependencies
         run: |
