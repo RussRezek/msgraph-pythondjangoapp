@@ -41,13 +41,13 @@ jobs:
       - name: Copy settings file
         run: |
           echo $OAUTH_SETTINGS > oauth_settings.yml
-          echo $SQL_ALCHEMY_SETTINGS > settings2.ini
+          echo $SQL_ALCHEMY_SETTINGS > settings.ini
       
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          python manage.py migrate     
+ 
 
          
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
