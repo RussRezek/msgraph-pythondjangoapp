@@ -37,7 +37,6 @@
               <!--li class="nav-item" data-turbolinks="false">
                 <a class="nav-link{% if request.resolver_match.view_name == 'ai_files' %} active{% endif %}" href="{% url 'ai_files' %}">AI Files</a>
               </li-->
-            {% endif %}
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   Files
@@ -47,7 +46,7 @@
                   <a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a>
               </div>
               </li>
-
+            {% endif %}
           </ul>
           <ul class="navbar-nav justify-content-end">
             <li class="nav-item">

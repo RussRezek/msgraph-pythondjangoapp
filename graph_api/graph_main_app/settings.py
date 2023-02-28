@@ -25,7 +25,7 @@ SECRET_KEY = 'REDACTED'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['lbgraphapiconnector.azurewebsites.net']
 
 
 # Application definition
