@@ -40,7 +40,7 @@ jobs:
 
       - name: Copy settings file
         run: |
-          working-directory graph_api
+          working-directory: graph_api
           echo $OAUTH_SETTINGS > oauth_settings.yml
           echo $SQL_ALCHEMY_SETTINGS > settings2.ini
       
