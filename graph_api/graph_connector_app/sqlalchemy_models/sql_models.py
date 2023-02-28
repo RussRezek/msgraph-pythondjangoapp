@@ -21,7 +21,7 @@ class DatabaseConnection:
     def __init__(self):
         self.connectionstring = "mssql+pyodbc://" + Config.get('DomoDB_Local','username') + ":" \
                                 + Config.get('DomoDB_Local','password') + "@"\
-                                + Config.get('DomoDB_Local','server') + ":" \
+                                + "tcp:" + Config.get('DomoDB_Local','server') + ":" \
                                 + Config.get('DomoDB_Local','port') + "/"\
                                 + Config.get('DomoDB_Local','database') \
                                 + "?Encrypt=no" + "&" \
@@ -39,6 +39,7 @@ Base = declarative_base()
 db = DatabaseConnection()
 
 # reflect current database engine to metadata
+# metadata = sa.MetaData(db.engine)
 metadata = sa.MetaData(db.engine)
 metadata.reflect()
 
