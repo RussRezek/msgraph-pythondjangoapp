@@ -21,7 +21,7 @@ class DatabaseConnection:
     def __init__(self):
         self.connectionstring = "mssql+pyodbc://" + Config.get('DomoDB_Local','username') + ":" \
                                 + Config.get('DomoDB_Local','password') + "@"\
-                                + "tcp:" + Config.get('DomoDB_Local','server') + ":" \
+                                + Config.get('DomoDB_Local','server') + ":" \
                                 + Config.get('DomoDB_Local','port') + "/"\
                                 + Config.get('DomoDB_Local','database') \
                                 + "?Encrypt=no" + "&" \
