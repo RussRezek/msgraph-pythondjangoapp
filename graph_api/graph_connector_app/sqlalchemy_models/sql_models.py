@@ -19,13 +19,13 @@ class DatabaseConnection:
     _db_cur = None
 
     def __init__(self):
-        self.connectionstring = "mssql+pyodbc://" + Config.get('DomoDB_Local','username') + ":" \
-                                + Config.get('DomoDB_Local','password') + "@"\
-                                + Config.get('DomoDB_Local','server') + ":" \
-                                + Config.get('DomoDB_Local','port') + "/"\
-                                + Config.get('DomoDB_Local','database') \
-                                + "?Encrypt=no" + "&" \
-                                + Config.get('DomoDB_Local', 'driver')
+        self.connectionstring = "mssql+pyodbc://" + Config.get('DomoDB','username') + ":" \
+                                + Config.get('DomoDB','password') + "@"\
+                                + Config.get('DomoDB','server') + ":" \
+                                + Config.get('DomoDB','port') + "/"\
+                                + Config.get('DomoDB','database') \
+                                + "?Encrypt=yes&TrustServerCertificate=yes" + "&" \
+                                + Config.get('DomoDB', 'driver')
 
 
         self.engine = sa.create_engine(self.connectionstring)
