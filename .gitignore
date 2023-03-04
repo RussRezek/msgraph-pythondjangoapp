@@ -111,4 +111,4 @@ oath_settings_ORIGS.yml
 settings.ini
 
 # Django Settings
-graph_main_app/settings.py
+settings.py
