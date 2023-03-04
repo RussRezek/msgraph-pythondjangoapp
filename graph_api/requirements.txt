@@ -6,3 +6,4 @@ mssql-django
 pyodbc
 sqlalchemy==1.*
 gunicorn
+whitenoise

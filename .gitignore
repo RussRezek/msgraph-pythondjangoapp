@@ -109,3 +109,6 @@ oath_settings_ORIGS.yml
 
 #SQL Achelmy Settings
 settings.ini
+
+# Django Settings
+settings.py
