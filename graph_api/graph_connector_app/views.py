@@ -185,7 +185,7 @@ def get_all_math_iready(request):
                 file['WorksheetName'] = worksheet_data['WorksheetName']
                 file_dict['WorksheetName'] = worksheet_data['WorksheetName']
 
-                if '_math_' in file_dict['FileName']:
+                if '_math' in file_dict['FileName']:
                     file_info_list.append(file_dict.copy())
 
     file_data_tab =[]
