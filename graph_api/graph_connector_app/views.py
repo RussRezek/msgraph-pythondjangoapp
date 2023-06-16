@@ -185,7 +185,7 @@ def get_all_math_iready(request):
                 file['WorksheetName'] = worksheet_data['WorksheetName']
                 file_dict['WorksheetName'] = worksheet_data['WorksheetName']
 
-                if '_math' in file_dict['FileName']:
+                if '_math' in file_dict['FileName'].lower():
                     file_info_list.append(file_dict.copy())
 
     file_data_tab =[]
@@ -253,7 +253,7 @@ def get_all_reading_iready(request):
                 file['WorksheetName'] = worksheet_data['WorksheetName']
                 file_dict['WorksheetName'] = worksheet_data['WorksheetName']
 
-                if '_ela' in file_dict['FileName']:
+                if '_ela' in file_dict['FileName'].lower():
                     file_info_list.append(file_dict.copy())
 
     file_data_tab =[]
@@ -322,7 +322,7 @@ def get_all_eligibility(request):
                 file['WorksheetName'] = worksheet_data['WorksheetName']
                 file_dict['WorksheetName'] = worksheet_data['WorksheetName']
 
-                if 'Eligibility' in file_dict['FileName']:
+                if 'eligibility' in file_dict['FileName'].lower():
                     file_info_list.append(file_dict.copy())
 
     file_data_tab =[]
