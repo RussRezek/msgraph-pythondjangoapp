@@ -176,17 +176,25 @@ class Eligibility(Base):
     __tablename__ = "EligibilityStaging"
     __table_args__ = {"schema": "AI"}
     district = Column("District", String)
+    school_name = Column("SchoolName", String)
+    last_name = Column("LastName", String)
+    first_name = Column("FirstName", String)
+    middle_name = Column("MiddleName", String)
+    grade = Column("Grade", String)
     subject = Column("Subject", String)
+    student_id = Column("StudentId", String, primary_key=True,autoincrement=False)
+    iready_student_id = Column("iReadyStudentId", String)
+    gender = Column("Gender", String)
+    date_of_birth = Column("DateOfBirth",Date)
+    ethnicity = Column("Ethnicity",String)
+    esl = Column("ESL", String)
+    SchoolNPSIS = Column("SchoolNPSIS", String)
+    NPSCode = Column("NPSCode", String)
     referral_status = Column("ReferralStatus", String)
     consent_status = Column("ConsentStatus", String)
     referral_type = Column("ReferralType", String)
-    student_id = Column("StudentId", String, primary_key=True,autoincrement=False)
-    last_name = Column("LastName", String)
-    first_name = Column("FirstName", String)
-    grade = Column("Grade", String)
-    gender = Column("Gender", String)
-    school_name = Column("SchoolName", String)
-    status = Column("Status", String)
+    status = Column("Status", String) 
+ 
 
 class LoadProduction:
     """Load AI Production Tables"""

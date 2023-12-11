@@ -19,12 +19,12 @@ from graph_connector_app.sqlalchemy_models import sql_models as sm
 #SET DRIVE AND DIRECTORY LIST
 
 drive = '/drives/b!j7GCe-Two0-73phJMu9XqviV7CunZMpEm0xZVyOP271WIaR6JXsIQKeBR7P0r-37/'
-directory_list = ['root:/IT Solutions/Data Reports - Broward:/children'
-               ,'root:/IT Solutions/Data Reports - Charlotte-Mecklenburg:/children'
-               ,'root:/IT Solutions/Data Reports - Delaware:/children'
-               ,'root:/IT Solutions/Data Reports - New York:/children'
-               ,'root:/IT Solutions/Data Reports - Palm Beach:/children'
-               ,'root:/IT Solutions/Data Reports - Philadelphia:/children' ]
+directory_list = ['root:/IT Solutions/2023-2024 Data/Data Reports - Broward:/children'
+               ,'root:/IT Solutions/2023-2024 Data/Data Reports - Charlotte-Mecklenburg:/children'
+               ,'root:/IT Solutions/2023-2024 Data/Data Reports - Delaware:/children'
+               ,'root:/IT Solutions/2023-2024 Data/Data Reports - New York:/children'
+               ,'root:/IT Solutions/2023-2024 Data/Data Reports - Palm Beach:/children'
+               ,'root:/IT Solutions/2023-2024 Data/Data Reports - Philadelphia:/children' ]
                
 #directory_list = ['root:/IT Solutions/Data Reports - Philadelphia:/children']
 
