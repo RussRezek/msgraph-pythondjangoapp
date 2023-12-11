@@ -175,8 +175,8 @@ class Eligibility(Base):
     """Eligibility Model"""
     __tablename__ = "EligibilityStaging"
     __table_args__ = {"schema": "AI"}
-    subject = Column("Subject", String)
     district = Column("District", String)
+    subject = Column("Subject", String)
     school_name = Column("SchoolName", String)
     last_name = Column("LastName", String)
     first_name = Column("FirstName", String)

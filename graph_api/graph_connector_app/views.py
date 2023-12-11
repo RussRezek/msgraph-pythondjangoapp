@@ -343,7 +343,7 @@ def get_all_eligibility(request):
         if not isinstance(record[6], str): #StudentGrade
             record[6] = str(record[6])
     for idx, record in enumerate (context['file_data']):
-        if record[2] == 'ReferralStatus':
+        if record[2] == 'School Name':
             context['file_data'].pop(idx)
 
     db = sm.db
