@@ -330,7 +330,7 @@ def get_all_eligibility(request):
         if 'file_data' not in context:
             file_data_tab = get_file_data(token,drive,file['id'],file['WorksheetName'])['values']
             for row in file_data_tab:
-                row.insert(0, 'Eligibilty')
+                row.insert(0, 'Eligibility')
                 row.insert(0, file['ParentDirectory'])
             context['file_data'] = file_data_tab
         else:
