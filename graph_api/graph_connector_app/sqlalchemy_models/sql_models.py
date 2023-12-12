@@ -190,6 +190,7 @@ class Eligibility(Base):
     first_name = Column("FirstName", String)
     middle_name = Column("MiddleName", String)
     grade = Column("Grade", String)
+    referral_status = Column("ReferralStatus", String)
     student_id = Column("StudentId", String, primary_key=True,autoincrement=False)
     iready_student_id = Column("iReadyStudentId", String)
     gender = Column("Gender", String)
@@ -198,7 +199,6 @@ class Eligibility(Base):
     esl = Column("ESL", String)
     SchoolNPSIS = Column("SchoolNPSIS", String)
     NPSCode = Column("NPSCode", String)
-    referral_status = Column("ReferralStatus", String)
     consent_status = Column("ConsentStatus", String)
     status = Column("Status", String) 
  
