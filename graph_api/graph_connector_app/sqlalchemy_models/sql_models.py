@@ -200,7 +200,6 @@ class Eligibility(Base):
     NPSCode = Column("NPSCode", String)
     referral_status = Column("ReferralStatus", String)
     consent_status = Column("ConsentStatus", String)
-    referral_type = Column("ReferralType", String)
     status = Column("Status", String) 
  
 
