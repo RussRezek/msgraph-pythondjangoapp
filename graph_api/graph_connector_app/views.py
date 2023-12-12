@@ -205,12 +205,12 @@ def get_all_math_iready(request):
     for idx, record in enumerate (context['file_data']):
         if not isinstance(record[5], str): #StudentGrade
             record[5] = str(record[5])
-        if isinstance(record[45], str): #DiagnosticGain
-            record[45] = None
-        if isinstance(record[48], str): #[PercentProgresstoAnnualTypicalGrowth(%)]
-            record[48] = None
-        if isinstance(record[49], str): #[PercentProgresstoAnnualStretchGrowth(%)]
+        if isinstance(record[49], str): #DiagnosticGain
             record[49] = None
+        if isinstance(record[52], str): #[PercentProgresstoAnnualTypicalGrowth(%)]
+            record[52] = None
+        if isinstance(record[53], str): #[PercentProgresstoAnnualStretchGrowth(%)]
+            record[53] = None
     for idx, record in enumerate (context['file_data']):
         if record[4] == 'Student ID':
             context['file_data'].pop(idx)
@@ -273,12 +273,12 @@ def get_all_reading_iready(request):
     for idx, record in enumerate (context['file_data']):
         if not isinstance(record[5], str): #StudentGrade
             record[5] = str(record[5])
-        if isinstance(record[54], str): #DiagnosticGain
-            record[54] = None
-        if isinstance(record[57], str): #[PercentProgresstoAnnualTypicalGrowth(%)]
-            record[57] = None
-        if isinstance(record[58], str): #[PercentProgresstoAnnualStretchGrowth(%)]
+        if isinstance(record[58], str): #DiagnosticGain
             record[58] = None
+        if isinstance(record[61], str): #[PercentProgresstoAnnualTypicalGrowth(%)]
+            record[61] = None
+        if isinstance(record[62], str): #[PercentProgresstoAnnualStretchGrowth(%)]
+            record[62] = None
     for idx, record in enumerate (context['file_data']):
         if record[4] == 'Student ID':
             context['file_data'].pop(idx)
