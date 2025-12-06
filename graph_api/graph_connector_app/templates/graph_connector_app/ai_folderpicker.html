@@ -1,0 +1,79 @@
+<!-- Copyright (c) Microsoft Corporation.
+     Licensed under the MIT License. -->
+{% extends "graph_connector_app/layout.html" %}
+{% block content %}
+<h1>AI Files</h1>
+{% if ai_years %}
+    
+<form name="ai_picker" id="id_ai_picker" action="/ai_files" method="post">
+  {% csrf_token %}
+    <p>
+    <table class="ai_picker_table">
+        <tr>
+            <td><label for="id_year">Academic Year: </label></td>
+            <td><select name='year' id="id_year" form="id_ai_picker">
+                <option value="--Please Select--">--Please Select--</option>
+            {% for ai_year in ai_years %}
+                <option value="{{ai_year.AcademicYear}}">{{ ai_year.AcademicYear}}</option>
+            {% endfor %}
+            </select></td>
+        </tr>
+</p>
+<p>
+    <tr>
+    <td><label for="id_district">District: </label></td>
+    <td><select name='district' id="id_district" form="id_ai_picker">
+        <option value="--Please Select--">--Please Select--</option>
+    </select></td>
+    </tr>
+  </p>
+
+</table>
+
+
+<p>
+<table>
+  <tr>
+    <td>
+      <!--form action="/ai_files" method="post"-->
+      <input type="submit">
+    </td>
+  </tr>
+</table>
+</p>
+
+</form>
+
+{% endif %}
+
+<script>
+document.getElementById("id_year").addEventListener("change", function() {
+  document.getElementById("id_district").innerHTML = ""; // Clear existing options
+
+  $.ajax({
+      type: 'GET',
+      url: "get_districts",
+      data: {
+          ai_year_selection: $("#id_year").val(), // Get value from #id_year
+      },
+      dataType: 'json',
+      success: function(response) {
+          var select = document.getElementById("id_district"); // Corrected from id_year
+
+          for (var i = 0; i < response.districts.length; i++) {
+              var option = document.createElement("option");
+              option.value = response.districts[i]; 
+              option.innerHTML = response.districts[i]; 
+              select.appendChild(option);
+          }
+      },
+      error: function(xhr, status, error) {
+          console.error("AJAX Error: " + status + " - " + error);
+      }
+  });
+});
+
+
+</script>
+
+{% endblock %}

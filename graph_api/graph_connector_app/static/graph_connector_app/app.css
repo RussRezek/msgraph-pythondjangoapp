@@ -16,3 +16,11 @@ body {
   padding-top: 4px;
   padding-bottom: 4px;
 }
+
+.ai_picker_table table, .ai_picker_table th, .ai_picker_table td {
+  border-spacing: 30px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+}

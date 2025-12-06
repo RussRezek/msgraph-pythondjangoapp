@@ -42,6 +42,7 @@
                   Files
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                  <a class="dropdown-item {% if request.resolver_match.view_name == 'get_years' %} active{% endif %}" href="{% url 'get_years' %}">AI Picker</a>
                   <a class="dropdown-item {% if request.resolver_match.view_name == 'ai_files' %} active{% endif %}" href="{% url 'ai_files' %}">AI Files</a>
                   <a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a>
               </div>

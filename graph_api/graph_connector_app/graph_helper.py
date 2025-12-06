@@ -58,6 +58,9 @@ def get_filelist(token,drive,directory):
 
     }
 
+    url = f'{GRAPH_URL}{drive}{directory}'
+
+
     files = requests.get(f'{GRAPH_URL}{drive}{directory}',
         headers=headers,
         params=query_params,

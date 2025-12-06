@@ -1,8 +1,9 @@
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
 
-{% extends "tutorial/layout.html" %}
+{% extends "graph_connector_app/layout.html" %}
 {% block content %}
+<a href="javascript:history.go(-1)" class="back">Back to Files</a>
 <h3>{{ file_name }}</h3>
 <table class="table">
   <thead>
@@ -16,6 +17,7 @@
     </tr>
   </thead>
   <tbody>
+    <br><br><br>
     {% if file_data %}
       {% for line in file_data %}
           {{ line }} <br>

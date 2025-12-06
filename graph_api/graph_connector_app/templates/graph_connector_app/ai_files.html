@@ -1,16 +1,17 @@
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-
-{% extends "tutorial/layout.html" %}
+{% extends "graph_connector_app/layout.html" %}
 {% block content %}
 <h1>AI Files</h1>
 <table class="table">
   <thead>
     <tr>
+      <th scope="col"><input type="checkbox" id="checkAll" name="checkAll"></th>
       <th scope="col">File Name</th>
       <th scope="col">Directory</th>
       <th scope="col">ID</th>
-      <th scope="col">Worksheet Name</th>
+      <th scope="col">WorksheetName</th>
+      <th scope="col">ModifiedDate</th>
       <th scope="col">CreatedDate</th>
 
     </tr>
@@ -19,35 +20,68 @@
     {% if ai_files %}
       {% for ai_file in ai_files %}
         <tr>
-          <td><a href="{{ ai_file.webUrl }}">{{ ai_file.name }}</a></td>
-          <td>{{ ai_file.ParentDirectory }}</td>
-          <td><a href="{% url 'file_data' ai_file.id ai_file.WorksheetName %}?file_name={{ ai_file.name | urlencode }}">{{ ai_file.id }}</a></td>
-          <!--td><a href="/file_data/{{ ai_file.id }}/{{ ai_file.WorksheetName}}/{{ ai_file.name}}">{{ ai_file.id }}</a></td-->
-          <td>{{ ai_file.WorksheetName }}</td>
-          <td>{{ ai_file.createdDateTime }}</td>
+          <div class="form-check">
+            <td><input type="checkbox" value={{ai_file.name}} name="selected_items" class="item-checkbox"></td>
+            <td><a href="{{ ai_file.webUrl }}">{{ ai_file.name }}</a></td>
+            <td>{{ ai_file.ParentDirectory }}</td>
+            <td><a href="{% url 'file_data' ai_file.id ai_file.WorksheetName %}?file_name={{ ai_file.name | urlencode }}">{{ ai_file.id }}</a></td>
+            <!--td><a href="/file_data/{{ ai_file.id }}/{{ ai_file.WorksheetName}}/{{ ai_file.name}}">{{ ai_file.id }}</a></td-->
+            <td>{{ ai_file.WorksheetName }}</td>
+            <td>{{ ai_file.lastModifiedDateTime }}</td>
+            <td>{{ ai_file.createdDateTime }}</td>
+          </div>
         </tr>
       {% endfor %}
     {% endif %}
   </tbody>
 </table>
+
+
+
+
 <table>
   <tr>
     <td>
-      <form action="/get_all_reading_iready" method="get">
+      <form name="reading_iready" id="id_reading_iready" action="/get_all_reading_iready" method="post">
+      {% csrf_token %}
+      <input type="hidden" id="directory_id" name="directory_path" value= "{{ ai_directory_path }}" >
       <input type="submit" value="Save All Reading iReady to DB" />
       </form>
     </td>
     <td>
-      <form action="/get_all_math_iready" method="get">
+      <form name="math_iready" id="id_math_iready" action="/get_all_math_iready" method="post">
+      {% csrf_token %}
+      <input type="hidden" id="directory_id" name="directory_path" value= "{{ ai_directory_path }}" >
       <input type="submit" value="Save All Math iReady to DB" />
       </form>
     </td>
     <td>
-      <form action="/get_all_eligibility" method="get">
+      <form name="eligibility" id="id_eligibility" action="/get_all_eligibility" method="post">
+      {% csrf_token %}
+      <input type="hidden" id="directory_id" name="directory_path" value= "{{ ai_directory_path }}" >
       <input type="submit" value="Save Eligibility to DB" />
       </form>
     </td>
+    <td>
+      <form name="load_tables" id="id_load_tables" action="/load_tables" method="get">
+      <input type="submit" value="Load Production Tables" />
+      </form>
+    </td>
+
   </tr>
 </table>
+
+
+
+<script>
+  const checkAllCheckbox = document.getElementById('checkAll');
+  const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+
+  checkAllCheckbox.addEventListener('change', function() {
+    itemCheckboxes.forEach(checkbox => {
+    checkbox.checked = this.checked;
+      });
+   });
+</script>
 
 {% endblock %}
