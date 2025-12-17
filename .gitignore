@@ -111,4 +111,5 @@ oath_settings_ORIGS.yml
 settings.ini
 
 # Django Settings
+graph_api/graph_connector_app/static/
 #settings.py
