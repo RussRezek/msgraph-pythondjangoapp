@@ -1,9 +1,11 @@
 Django==4.1
+django-environ
+gunicorn==23.0.0
 msal==1.18.0
-python-dateutil==2.8.2
-PyYAML==6.0
 mssql-django
 pyodbc
+python-dateutil==2.8.2
+PyYAML==6.0
+requests
 sqlalchemy==1.*
-gunicorn
 whitenoise
