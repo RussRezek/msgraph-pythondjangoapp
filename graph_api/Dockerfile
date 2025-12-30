@@ -57,7 +57,6 @@ WORKDIR /usr/src/app
 
 # Copy project source
 COPY . /usr/src/app
-COPY secrets/. /usr/src/app
 
 # Prepare directories for static/media and ensure permissions for non-root user
 RUN mkdir -p /usr/src/app/staticfiles /usr/src/app/media && chown -R appuser:appuser /usr/src/app
