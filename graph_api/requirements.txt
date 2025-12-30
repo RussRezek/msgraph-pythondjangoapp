@@ -1,9 +1,12 @@
 Django==4.1
 django-environ
 gunicorn==23.0.0
+django-environ
+gunicorn==23.0.0
 msal==1.18.0
 mssql-django
 pyodbc
+requests
 python-dateutil==2.8.2
 PyYAML
 requests
