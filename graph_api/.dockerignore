@@ -1,5 +1,4 @@
 nginx_cache
-logs
 .git
 __pycache__
 *.pyc

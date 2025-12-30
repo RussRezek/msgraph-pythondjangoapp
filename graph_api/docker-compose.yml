@@ -37,7 +37,7 @@ services:
     volumes:
       - static_volume:/usr/src/app/staticfiles:z
       - media_volume:/usr/src/app/media:z
-      - /opt/LEARNProjects/graph_api/logs:/usr/src/app/logs        # Production Log files
+     # - /opt/LEARNProjects/graph_api/logs:/usr/src/app/logs        # Production Log files
     env_file:
       - /opt/LEARNProjects/graph_api/secrets/.env
     restart: unless-stopped
