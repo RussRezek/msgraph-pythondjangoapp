@@ -1,0 +1,50 @@
+services:
+  nginx:
+    image: nginx:1.29.4
+    container_name: nginx-lb_graph_api
+    ports:
+      - "9080:80"
+      - "9443:443"
+    depends_on:
+      - django
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+
+  django:
+    image: lb_graph_api_django:latest
+    user: 3001:3001   # Must match user ID in Dockerfile.production and host file permissions.
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lb_graph_api_django-prod
+    expose:
+      - "8000"  # Only expose to nginx, not to host
+    volumes:
+      - static_volume:/usr/src/app/staticfiles:z
+      - media_volume:/usr/src/app/media:z
+      - /opt/LEARNProjects/graph_api/logs:/usr/src/app/logs        # Production Log files
+    env_file:
+      - /opt/LEARNProjects/graph_api/secrets/.env
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.5'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+
+volumes:
+  static_volume:
+    driver: local
+  media_volume:
+    driver: local
