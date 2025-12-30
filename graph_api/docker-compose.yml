@@ -27,7 +27,7 @@ services:
 
   django:
     image: lb_graph_api_django:latest
-    user: 3001:3001   # Must match user ID in Dockerfile.production and host file permissions.
+    #user: 3001:3001   # Must match user ID in Dockerfile.production and host file permissions.
     build:
       context: .
       dockerfile: Dockerfile

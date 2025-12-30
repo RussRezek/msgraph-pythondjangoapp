@@ -139,8 +139,8 @@ USE_TZ = True
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 #'/opt/LEARN/projects/graph-api-DEV/graph_api/graph_main_app'
 
-STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
-#'/opt/LEARN/projects/graph-api-DEV/graph_api/graph_main_app/static'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+#'/usr/src/app/staticfiles' (matches docker-compose volume mount)
 
 STATIC_URL = 'static/'
 
@@ -154,6 +154,10 @@ STORAGES = {
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
-CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS')
+#CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS')
+
+# Parse comma-separated trusted origins from environment variable
+csrf_origins = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins.split(",") if origin.strip()]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

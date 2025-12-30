@@ -60,15 +60,10 @@ COPY . /usr/src/app
 COPY secrets/. /usr/src/app
 
 # Prepare directories for static/media and ensure permissions for non-root user
-RUN mkdir -p /usr/src/app/media && chown -R appuser:appuser /usr/src/app
-RUN python manage.py collectstatic --noinput --clear || true
+RUN mkdir -p /usr/src/app/staticfiles /usr/src/app/media && chown -R appuser:appuser /usr/src/app
 
-
-# Switch to non-root
-USER 3001:3001
-
- # Expose application port (documentation)
+# Expose application port (documentation)
 EXPOSE 8000
 
-# Default command (can be overridden by compose)
-CMD ["gunicorn", "graph_main_app.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Default command - runs as root, collects statics, then switches to appuser
+CMD ["sh", "-c", "python /usr/src/app/manage.py collectstatic --noinput 2>/dev/null || true && chown -R appuser:appuser /usr/src/app/staticfiles /usr/src/app/media && gosu appuser gunicorn graph_main_app.wsgi:application --bind 0.0.0.0:8000"]
