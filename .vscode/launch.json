@@ -5,16 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Django",
+            "name": "Attach to container debugpy",
             "type": "python",
-            "request": "launch",
-            "program": "${workspaceFolder}/graph_api/manage.py",
-            "args": [
-                "runserver"
-            ],
-            "cwd": "${workspaceFolder}/graph_api/",
-            "django": true,
-            "justMyCode": true
+            "request": "attach",
+            "connect": { "host": "localhost", "port": 5678 },
+            "pathMappings": [
+                { "localRoot": "${workspaceFolder}/graph_api", "remoteRoot": "/usr/src/app" }
+            ]
         }
     ]
 }

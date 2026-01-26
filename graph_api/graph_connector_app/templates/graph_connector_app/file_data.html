@@ -3,8 +3,11 @@
 
 {% extends "graph_connector_app/layout.html" %}
 {% block content %}
-<a href="javascript:history.go(-1)" class="back">Back to Files</a>
+<!--a href="javascript:history.go(-1)" class="back">Back to Files</a-->
+<a href="{% url 'get_years' %}" class="back">Back to Files</a>
 <h3>{{ file_name }}</h3>
+
+
 <table class="table">
   <thead>
     <tr>

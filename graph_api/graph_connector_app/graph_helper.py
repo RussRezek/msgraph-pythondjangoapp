@@ -318,3 +318,71 @@ def get_iana_from_windows(windows_tz_name):
     # Assume if not found value is
     # already an IANA name
     return windows_tz_name
+
+def get_sharepoint_list_data(token, sharepoint_url):
+    # Set headers
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Accept': 'application/json;odata=verbose'
+    }
+
+    # Send GET to SharePoint OData endpoint
+    response = requests.get(sharepoint_url,
+        headers=headers,
+        timeout=100)
+
+    # Return the JSON result
+    return response.json()
+
+def get_sharepoint_users_via_graph(token, site_host, site_path, target_list_name):
+    # Get site ID first
+    target_list_name = target_list_name.lower()
+    site_url = f'{GRAPH_URL}/sites/{site_host}:{site_path}'
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Accept': 'application/json'
+    }
+    
+    site_response = requests.get(site_url, headers=headers, timeout=100)
+    if site_response.status_code != 200:
+        return {'error': f'Could not access site: {site_response.text}'}
+    
+    site_data = site_response.json()
+    site_id = site_data['id']
+    
+    # Get all lists
+    lists_url = f'{GRAPH_URL}/sites/{site_id}/lists?$select=id,displayName,system'
+    lists_response = requests.get(lists_url, headers=headers, timeout=100)
+    if lists_response.status_code != 200:
+        return {'error': f'Could not get lists: {lists_response.text}'}
+    
+    lists_data = lists_response.json()
+    all_users = []
+    
+    # Look for user-related lists
+    for lst in lists_data.get('value', []):
+        list_name = lst.get('displayName', '').lower()
+        # Check for user-related lists
+        if target_list_name in list_name :
+            list_id = lst.get('id')
+            # Get items from this list
+            items_url = f'{GRAPH_URL}/sites/{site_id}/lists/{list_id}/items?expand=fields($select=*)&top=5000'
+            items_response = requests.get(items_url, headers=headers, timeout=1000)
+
+            if items_response.status_code == 200:
+                items_data = items_response.json()
+                for item in items_data.get('value', []):
+                    all_users.append(item)
+                
+                # Handle pagination
+                while '@odata.nextLink' in items_data:
+                    items_response = requests.get(items_data['@odata.nextLink'], headers=headers, timeout=1000)
+                    if items_response.status_code == 200:
+                        items_data = items_response.json()
+                        for item in items_data.get('value', []):
+                            all_users.append(item)
+                    else:
+                        break
+
+    
+    return {'value': all_users}
