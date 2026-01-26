@@ -3,8 +3,8 @@ services:
     image: nginx:1.29.4
     container_name: lb_graph_nginx
     ports:
-      - "9080:80"
-      - "9443:443"
+      - "9081:80"
+      - "9444:443"
     depends_on:
       - django
     restart: unless-stopped
@@ -19,27 +19,34 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 512M
           cpus: '0.5'
         reservations:
-          memory: 64M
+          memory: 128M
           cpus: '0.1'
 
   django:
     image: lb_graph_api_django:latest
-    #user: 3001:3001   # Must match user ID in Dockerfile.production and host file permissions.
+    user: 3001:3001   # Must match user ID in Dockerfile.production and host file permissions.
     build:
       context: .
       dockerfile: Dockerfile
     container_name: lb_graph_django
     expose:
       - "8000"  # Only expose to nginx, not to host
+    ports:
+      - "5678:5678"  # Debug port for debugpy
+    environment:
+      - DEBUG=true
+      - GUNICORN_WORKERS=1
+      - GUNICORN_THREADS=4
+      - GUNICORN_TIMEOUT=6000
     volumes:
       - static_volume:/usr/src/app/staticfiles:z
       - media_volume:/usr/src/app/media:z
-     # - /opt/LEARNProjects/graph_api/logs:/usr/src/app/logs        # Production Log files
+      - /opt/LEARNProjects/LEARN_GraphAPI_App_V2/graph_api/logs:/usr/src/app/logs        # Production Log files
     env_file:
-      - /opt/LEARNProjects/graph_api/secrets/.env
+      - /opt/LEARNProjects/LEARN_GraphAPI_App_V2/graph_api/secrets/.env
     restart: unless-stopped
     deploy:
       resources:

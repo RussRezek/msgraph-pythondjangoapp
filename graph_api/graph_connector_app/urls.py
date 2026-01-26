@@ -20,5 +20,7 @@ urlpatterns = [
   path('get_all_eligibility', views.get_all_eligibility, name='get_all_eligibility'),
   path('get_picker', views.get_picker, name='get_years'),
   path('load_tables', views.load_tables, name='load_tables'),
-  path('get_districts', views.get_districts, name='get_districts')
+  path('get_districts', views.get_districts, name='get_districts'),
+  path('get_ims_data', views.get_ims_data, name='get_ims_data'),
+  path('debug', views.debug, name='debug')
 ]

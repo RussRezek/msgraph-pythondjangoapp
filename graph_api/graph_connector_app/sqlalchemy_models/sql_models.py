@@ -2,7 +2,7 @@ import configparser
 import os
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Integer, Column, String, Date, Numeric
+from sqlalchemy import Integer, Column, String, Date, DateTime, Numeric, Boolean
 from pathlib import Path
 
 
@@ -14,34 +14,45 @@ working_directory = os.getcwd()
 Config.read('./settings.ini')
 
 class DatabaseConnection:
-    """Connect to SQL Server Domo Database"""
+    """Connect to LEARN Behavioral SQL Server Database"""
     _db_connection = None
     _db_cur = None
 
-    def __init__(self):
-        self.connectionstring = "mssql+pyodbc://" + Config.get('DomoDB','username') + ":" \
-                                + Config.get('DomoDB','password') + "@"\
-                                + Config.get('DomoDB','server') + ":" \
-                                + Config.get('DomoDB','port') + "/"\
-                                + Config.get('DomoDB','database') \
-                                + "?Encrypt=yes&TrustServerCertificate=yes" + "&" \
-                                + Config.get('DomoDB', 'driver')
-
-
-        self.engine = sa.create_engine(self.connectionstring)
+    def __init__(self, section: str = "DomoDB"):
+        cfg = Config[section]
+        self.connectionstring = (
+            f"mssql+pyodbc://{cfg['username']}:{cfg['password']}@"
+            f"{cfg['server']}:{cfg['port']}/{cfg['database']}"
+            f"?Encrypt=yes&TrustServerCertificate=yes&{cfg['driver']}"
+        )
+        # Enable fast_executemany to speed up bulk inserts (pyodbc-specific optimization)
+        self.engine = sa.create_engine(
+            self.connectionstring,
+            fast_executemany=True,
+        )
         self.connection = self.engine.connect()
 
 
 # define declarative base
 Base = declarative_base()
 
-# create an engine
-db = DatabaseConnection()
+# create DomoIntegration engine
+db = DatabaseConnection("DomoDB")
 
 # reflect current database engine to metadata
 # metadata = sa.MetaData(db.engine)
 metadata = sa.MetaData(db.engine)
 metadata.reflect()
+
+# create Integration engine
+db_integration = DatabaseConnection("Integration")
+
+# reflect current database engine to metadata
+# metadata = sa.MetaData(db_integration.engine)
+metadata = sa.MetaData(db_integration.engine)
+metadata.reflect()
+
+
 
 # build your ReadingiReady class on existing `AI.ReadingiReadyStaging` table
 class ReadingiReady(Base):
@@ -77,7 +88,7 @@ class ReadingiReady(Base):
     completion_date = Column("CompletionDate", Date)
     norming_window = Column("NormingWindow", String)
     baseline_diagnostic = Column("BaselineDiagnostic(Y/N)", String)
-    most_recent_diagnostic = Column("MostRecentDiagnostic(Y/N)", String)
+    most_recent_diagnostic = Column("MostRecentDiagnosticYTD(Y/N)", String)
     duration = Column("Duration(min)", Integer)
     rush_flag = Column("RushFlag", String)
     read_aloud = Column("ReadAloud", String)
@@ -100,15 +111,15 @@ class ReadingiReady(Base):
     vocabulary_scale_score = Column("VocabularyScaleScore", Integer)
     vocabulary_placement = Column("VocabularyPlacement", String)
     vocabulary_relative_placement = Column("VocabularyRelativePlacement", String)
-    reading_comprehension_overall_scale_score = Column("ReadingComprehension:OverallScaleScore", Integer)
-    reading_comprehension_overall_placement = Column("ReadingComprehension:OverallPlacement", String)
-    reading_comprehension_overall_relative_placement = Column("ReadingComprehension:OverallRelativePlacement", String)
-    reading_comprehension_literature_scale_score = Column("ReadingComprehension:LiteratureScaleScore", Integer)
-    reading_comprehension_literature_placement = Column("ReadingComprehension:LiteraturePlacement", String)
-    reading_comprehension_literature_relative_placement = Column("ReadingComprehension:LiteratureRelativePlacement", String)
-    reading_comprehension_informational_text_scale_score = Column("ReadingComprehension:InformationalTextScaleScore", Integer)
-    reading_comprehension_informational_text_placement = Column("ReadingComprehension:InformationalTextPlacement", String)
-    reading_comprehension_informational_text_relative_placement = Column("ReadingComprehension:InformationalTextRelativePlacement", String)
+    comprehension_overall_scale_score = Column("Comprehension:OverallScaleScore", Integer)
+    comprehension_overall_placement = Column("Comprehension:OverallPlacement", String)
+    comprehension_overall_relative_placement = Column("Comprehension:OverallRelativePlacement", String)
+    comprehension_literature_scale_score = Column("Comprehension:LiteratureScaleScore", Integer)
+    comprehension_literature_placement = Column("Comprehension:LiteraturePlacement", String)
+    comprehension_literature_relative_placement = Column("Comprehension:LiteratureRelativePlacement", String)
+    comprehension_informational_text_scale_score = Column("Comprehension:InformationalTextScaleScore", Integer)
+    comprehension_informational_text_placement = Column("Comprehension:InformationalTextPlacement", String)
+    comprehension_informational_text_relative_placement = Column("Comprehension:InformationalTextRelativePlacement", String)
     diagnostic_gain = Column("DiagnosticGain", Numeric)
     annual_typical_growth_measure = Column("AnnualTypicalGrowthMeasure", Integer)
     annual_stretch_growth_measure = Column("AnnualStretchGrowthMeasure", Integer)
@@ -152,7 +163,7 @@ class MathiReady(Base):
     completion_date = Column("CompletionDate", Date)
     norming_window = Column("NormingWindow", String)
     baseline_diagnostic = Column("BaselineDiagnostic(Y/N)", String)
-    most_recent_diagnostic = Column("MostRecentDiagnostic(Y/N)", String)
+    most_recent_diagnostic = Column("MostRecentDiagnosticYTD(Y/N)", String)
     duration = Column("Duration(min)", Integer)
     rush_flag = Column("RushFlag", String)
     read_aloud = Column("ReadAloud", String)
@@ -175,6 +186,7 @@ class MathiReady(Base):
     geometry_scale_score = Column("GeometryScaleScore", Integer)
     geometry_placement = Column("GeometryPlacement", String)
     geometry_relative_placement = Column("GeometryRelativePlacement", String)
+    diagnostic_language = Column("DiagnosticLanguage", String)
     diagnostic_gain = Column("DiagnosticGain", Numeric)
     annual_typical_growth_measure = Column("AnnualTypicalGrowthMeasure", Integer)
     annual_stretch_growth_measure = Column("AnnualStretchGrowthMeasure", Integer)
@@ -193,34 +205,119 @@ class Eligibility(Base):
     school_name = Column("SchoolName", String)
     project_code = Column("ProjectCode", String)
     school_code = Column("SchoolCode", String)
-    last_name = Column("LastName", String)
-    first_name = Column("FirstName", String)
-    middle_name = Column("MiddleName", String)
-    grade = Column("Grade", String)
+    last_name = Column("StudentLastName", String)
+    first_name = Column("StudentFirstName", String)
+    middle_name = Column("StudentMiddleName", String)
+    grade = Column("GradeLevel", String)
     referral_type = Column("ReferralType",String)
     student_id = Column("StudentId", String, primary_key=True,autoincrement=False)
-    iready_student_id = Column("iReadyStudentId", String)
+    iready_student_id = Column("i-ReadyStudentUserId", String)
     gender = Column("Gender", String)
     date_of_birth = Column("DateOfBirth", Date)
     ethnicity = Column("Ethnicity",String)
     esl = Column("ESL", String)
-    SchoolNPSIS = Column("SchoolNPSIS", String)
-    NPSCode = Column("NPSCode", String)
-    Counseling = Column("Counseling", String)
-    ParticipatesInTitleI = Column("ParticipatesInTitleI", String)
+    school_npsis = Column("SchoolNPSIS", String)
+    nps_code = Column("NPSCode", String)
+    counseling = Column("Counseling", String)
+    participates_in_title_i = Column("ParticipatesinTitleI", String)
 
     #consent_status = Column("ConsentStatus", String)
     #status = Column("Status", String) 
+
+# build your UserInformation class on existing `IMS.UserInformationListStaging` table
+class UserInformation(Base):
+    """User Information Model"""
+    __tablename__ = "UserInformationListStaging"
+    __table_args__ = {"schema": "IMS"}
+    content_type_id = Column("ContentTypeID", String)
+    name = Column("Name", String)
+    compliance_asset_id = Column("ComplianceAssetId", String)
+    account = Column("Account", String)
+    email = Column("EMail", String)
+    other_mail = Column("OtherMail", String)
+    user_expiration = Column("UserExpiration", DateTime)
+    user_last_deletion_time = Column("UserLastDeletionTime", DateTime)
+    mobile_number = Column("MobileNumber", String)
+    about_me = Column("AboutMe", String)
+    sip_address = Column("SIPAddress", String)
+    is_site_admin = Column("IsSiteAdmin", Boolean)
+    deleted = Column("Deleted", Boolean)
+    hidden = Column("Hidden", Boolean)
+    picture = Column("Picture", String)
+    department = Column("Department", String)
+    job_title = Column("JobTitle", String)
+    first_name = Column("FirstName", String)
+    last_name = Column("LastName", String)
+    work_phone = Column("WorkPhone", String)
+    user_name = Column("UserName", String)
+    website = Column("WebSite", String)
+    ask_me_about = Column("AskMeAbout", String)
+    office = Column("Office", String)
+    modified = Column("Modified", DateTime)
+    id = Column("Id", Integer, primary_key=True, autoincrement=False)
+    content_type = Column("ContentType", String)
+    created = Column("Created", DateTime)
+    created_by_id = Column("CreatedById", Integer)
+    modified_by_id = Column("ModifiedById", Integer)
+    owshiddenversion = Column("Owshiddenversion", String)
+    version = Column("Version", String)
+    path = Column("Path", String)
+
+
+
+# build your AssetManagement class on existing `IMS.AssetManagementListStaging` table
+class AssetManagement(Base):
+    """Asset Management Model"""
+    __tablename__ = "AssetManagementListStaging"
+    __table_args__ = {"schema": "IMS"}
+    id = Column("Id", Integer, primary_key=True, autoincrement=False)
+    content_type_id = Column("ContentTypeID", String)
+    content_type = Column("ContentType", String)
+    title = Column("Title", String)
+    modified = Column("Modified", DateTime)
+    created = Column("Created", DateTime)
+    created_by_id = Column("CreatedById", Integer)
+    modified_by_id = Column("ModifiedById", Integer)
+    owshiddenversion = Column("Owshiddenversion", String)
+    version = Column("Version", String)
+    path = Column("Path", String)
+    compliance_asset_id = Column("ComplianceAssetId", String)
+    status_value = Column("StatusValue", String)
+    manufacturer = Column("Manufacturer", String)
+    model = Column("Model", String)
+    color_value = Column("ColorValue", String)
+    tablet_number = Column("TabletNumber", String)
+    current_owner_id = Column("CurrentOwnerId", Integer)
+    previous_owner_id = Column("PreviousOwnerId", Integer)
+    due_date = Column("DueDate", DateTime)
+    current_owner_previous_owner_id = Column("CurrentOwnerPreviousOwnerId", Integer)
+    date_assigned = Column("DateAssigned", DateTime)
+    date_reached_out_for_collection = Column("DateReachedOutForCollection", DateTime)
+    staff_last_assigned_to_email_id = Column("StaffLastAssignedToEmailId", Integer)
+    assigned_by_id = Column("AssignedById", Integer)
+    location_value = Column("LocationValue", String)
+    tracking_number = Column("TrackingNumber", String)
+    has_a_working_charger = Column("HasAWorkingCharger", String)
+    staff_last_assigned_to_full_name = Column("StaffLastAssignedToFullName", String)
+    color_tag = Column("ColorTag", String)
+    activity_count = Column("ActivityCount", String)
+    current_owner_name_txt = Column("CurrentOwnerName_txt", String)
+    current_owner_email_txt = Column("CurrentOwnerEMail_txt", String)
+    assigned_by_name_txt = Column("AssignedByName_txt", String)
+    assigned_by_email_txt = Column("AssignedByEmail_txt", String)
+
  
+
+
 
 class LoadProduction:
     """Load AI Production Tables"""
    
-    def load_production_tables(self):
+    def load_production_tables(self,option=3):
 
         db = DatabaseConnection()
         
         trans = db.connection.begin()
-        db.connection.execute("AI.AILoadTables")
+        db.connection.execute(f"EXEC AI.AILoadTables @Option = {option}")
         trans.commit()
 

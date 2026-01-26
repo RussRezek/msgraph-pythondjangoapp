@@ -50,7 +50,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Install dependencies:
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt debugpy
 
 # Create workdir
 WORKDIR /usr/src/app
@@ -58,11 +58,21 @@ WORKDIR /usr/src/app
 # Copy project source
 COPY . /usr/src/app
 
+# Copy secrets into root directory
+COPY secrets/. /usr/src/app/
+
+# Remove secrets directory after copying
+RUN rm -rf /usr/src/app/secrets
+
 # Prepare directories for static/media and ensure permissions for non-root user
 RUN mkdir -p /usr/src/app/staticfiles /usr/src/app/media && chown -R appuser:appuser /usr/src/app
 
-# Expose application port (documentation)
-EXPOSE 8000
+# Copy entrypoint script
+COPY entrypoint.sh /usr/src/app/
+RUN chmod +x /usr/src/app/entrypoint.sh
 
-# Default command - runs as root, collects statics, then switches to appuser
-CMD ["sh", "-c", "python /usr/src/app/manage.py collectstatic --noinput 2>/dev/null || true && chown -R appuser:appuser /usr/src/app/staticfiles /usr/src/app/media && gosu appuser gunicorn graph_main_app.wsgi:application --bind 0.0.0.0:8000"]
+# Expose application port (documentation)
+EXPOSE 8000 5678
+
+# Default command - run entrypoint
+ENTRYPOINT ["/usr/src/app/entrypoint.sh"]

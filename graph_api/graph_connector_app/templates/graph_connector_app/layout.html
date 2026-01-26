@@ -41,19 +41,19 @@
               <!--li class="nav-item" data-turbolinks="false">
                 <a class="nav-link{% if request.resolver_match.view_name == 'ai_files' %} active{% endif %}" href="{% url 'ai_files' %}">AI Files</a>
               </li-->
-            {% endif %}
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  Files
+                  Actions
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                  <a class="dropdown-item {% if request.resolver_match.view_name == 'get_years' %} active {% endif %}" href="{% url 'get_years' %}">Choose Files</a>
-                  <a class="dropdown-item {% if request.resolver_match.view_name == 'ai_files' %} active {% endif %}" href="{% url 'ai_files' %}">AI Files</a>
-                  <a class="dropdown-item {% if request.resolver_match.view_name == 'load_tables' %} active {% endif %}" href="{% url 'load_tables' %}">Load Tables</a>
+                  <a class="dropdown-item {% if request.resolver_match.view_name == 'get_years' %} active {% endif %}" href="{% url 'get_years' %}">Choose AI Files</a>
+                  <!--a class="dropdown-item {% if request.resolver_match.view_name == 'ai_files' %} active {% endif %}" href="{% url 'ai_files' %}">AI Files</a-->
+                  <a class="dropdown-item {% if request.resolver_match.view_name == 'load_tables' %} active {% endif %}" href="{% url 'load_tables' %}">Load AI Tables</a>
+                  <a class="dropdown-item {% if request.resolver_match.view_name == 'get_ims_data' %} active {% endif %}" href="{% url 'get_ims_data' %}">Run IMS Refresh</a>
                   <a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a>
               </div>
               </li>
-
+            {% endif %}
           </ul>
           <ul class="navbar-nav justify-content-end">
             <li class="nav-item">
@@ -95,6 +95,47 @@
               <pre class="alert-pre border bg-light p-2"><code>{{ error.debug }}</code></pre>
             {% endif %}
           </div>
+        {% endfor %}
+      {% endif %}
+
+      {% if messages %}
+        {% for message in messages %}
+          {% if message.tags == 'error' %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          {% elif message.tags == 'success' %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          {% elif message.tags == 'warning' %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          {% elif message.tags == 'info' %}
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          {% else %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          {% endif %}
         {% endfor %}
       {% endif %}
       {% block content %}{% endblock %}
