@@ -10,7 +10,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx.default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx.default-DEV.conf:/etc/nginx/conf.d/default.conf:ro
       - static_volume:/usr/src/app/staticfiles:z
       - media_volume:/usr/src/app/media:z
       - ./localhost.crt:/usr/src/app/localhost.crt:ro
