@@ -886,8 +886,8 @@ def get_ims_data(request):
                 record['OtherMail'] = fields.get('OtherMail', None)
                 record['UserExpiration'] = parser.parse(fields['UserExpiration']) if fields.get('UserExpiration') else None
                 record['UserLastDeletionTime'] = parser.parse(fields['UserLastDeletionTime']) if fields.get('UserLastDeletionTime') else None
-                record['MobileNumber'] = fields.get('MobileNumber', None)
-                record['AboutMe'] = fields.get('AboutMe', None)
+                record['MobileNumber'] = fields.get('MobilePhone', None)
+                record['AboutMe'] = fields.get('Notes', None)
                 record['SIPAddress'] = fields.get('SipAddress') or fields.get('SIPAddress', None)
                 record['IsSiteAdmin'] = fields.get('IsSiteAdmin', None)
                 record['Deleted'] = fields.get('Deleted', None)
@@ -907,7 +907,7 @@ def get_ims_data(request):
                 record['WorkPhone'] = fields.get('WorkPhone', None)
                 record['UserName'] = fields.get('UserName', None)
                 record['WebSite'] = item.get('webUrl', None)
-                record['AskMeAbout'] = fields.get('AskMeAbout', None)
+                record['AskMeAbout'] = fields.get('SPSResponsibility', None)
                 record['Office'] = fields.get('Office', None)
                 # prefer top-level timestamps from Graph item, fall back to fields
                 modified_str = item.get('lastModifiedDateTime') or fields.get('Modified')

@@ -47,7 +47,7 @@
                   Actions
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                  <a class="dropdown-item {% if request.resolver_match.view_name == 'get_years' %} active {% endif %}" href="{% url 'get_years' %}">Choose AI Files</a>
+                  <a class="dropdown-item {% if request.resolver_match.view_name == 'get_years' %} active {% endif %}" href="{% url 'get_years' %}">Choose Academic Intervention Files</a>
                   <!--a class="dropdown-item {% if request.resolver_match.view_name == 'ai_files' %} active {% endif %}" href="{% url 'ai_files' %}">AI Files</a-->
                   <a class="dropdown-item {% if request.resolver_match.view_name == 'load_tables' %} active {% endif %}" href="{% url 'load_tables' %}">Load AI Tables</a>
                   <a class="dropdown-item {% if request.resolver_match.view_name == 'get_ims_data' %} active {% endif %}" href="{% url 'get_ims_data' %}">Run IMS Refresh</a>
