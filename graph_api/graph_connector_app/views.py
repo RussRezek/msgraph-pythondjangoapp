@@ -1107,6 +1107,8 @@ def get_ims_data(request):
         context['errors'] = [{'message': f'Error fetching {list_name} data: {str(e)}'}]
 
     try:
+        db = sm.DatabaseConnection("Integration")
+        
         trans = db.connection.begin()
         db.connection.execute(sm.sa.text("EXECUTE IMS.LoadTables"))
         trans.commit()
