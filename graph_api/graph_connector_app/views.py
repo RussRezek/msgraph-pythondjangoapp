@@ -1106,6 +1106,15 @@ def get_ims_data(request):
         logger.error(traceback.format_exc())
         context['errors'] = [{'message': f'Error fetching {list_name} data: {str(e)}'}]
 
+    try:
+        trans = db.connection.begin()
+        db.connection.execute(sm.sa.text("EXECUTE IMS.LoadTables"))
+        trans.commit()
+        logger.info("IMS.Load Tables was successful")
+    except Exception as e:
+        logger.error(f"Error loading production tables: {type(e).__name__}: {str(e)}")
+        raise e
+
     return render(request, 'graph_connector_app/file_data.html', context)
 
 def debug(request):
