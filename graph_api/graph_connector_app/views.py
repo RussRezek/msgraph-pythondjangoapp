@@ -366,7 +366,7 @@ def get_all_math_iready(request):
         if extra_columns:
             error_msg = f"{file_source} column mismatch: "
             if extra_columns:
-                error_msg += f"Incorrect column name in Excel: {', '.join(extra_columns)}. "
+                error_msg += f" {', '.join(extra_columns)}. "
             error_msg += f"Contact {help_desk_email}."
             logger.error(error_msg)
             messages.error(request, error_msg)
@@ -429,6 +429,7 @@ def get_all_math_iready(request):
             db.connection.execute("TRUNCATE TABLE AI.MathIreadyStaging")
             trans.commit()
         except Exception as e:
+            trans.rollback()
             logger.error(f"Error truncating {file_source} staging table: {type(e).__name__}: {str(e)}")
             raise e
 
@@ -439,6 +440,7 @@ def get_all_math_iready(request):
                 trans.commit()
                 messages.success(request, f'{file_source} Data Successfully Imported!')
             except Exception as e:
+                trans.rollback()
                 logger.error(f"Error inserting {file_source} records: {type(e).__name__}: {str(e)}")
                 messages.error(request, f'Something went wrong importing {file_source} data: {str(e)}. Contact {help_desk_email}.')
                 raise
@@ -562,7 +564,7 @@ def get_all_reading_iready(request):
         if extra_columns:
             error_msg = f"{file_source} column mismatch: "
             if extra_columns:
-                error_msg += f"Incorrect column name in Excel: {', '.join(extra_columns)}. "
+                error_msg += f" {', '.join(extra_columns)}. "
             error_msg += f"Contact {help_desk_email}."
             logger.error(error_msg)
             messages.error(request, error_msg)
@@ -627,7 +629,8 @@ def get_all_reading_iready(request):
             trans = db.connection.begin()
             db.connection.execute("TRUNCATE TABLE AI.ReadingIreadyStaging")
             trans.commit()
-        except Exception as e:    
+        except Exception as e:
+            trans.rollback()    
             logger.error(f"Error truncating {file_source} table: {type(e).__name__}: {str(e)}")
             raise
 
@@ -639,6 +642,7 @@ def get_all_reading_iready(request):
                 trans.commit()
                 messages.success(request, f'{file_source} Data Successfully Imported!')
             except Exception as e:
+                trans.rollback()
                 logger.error(f"Error inserting {file_source} records: {type(e).__name__}: {str(e)}")
                 messages.error(request, f'Something went wrong importing {file_source} data: {str(e)}. Contact {help_desk_email}.')
                 raise
@@ -776,6 +780,7 @@ def get_all_eligibility(request):
         db.connection.execute("TRUNCATE TABLE AI.EligibilityStaging")
         trans.commit() 
     except Exception as e:
+        trans.rollback()
         logger.error(f"Error truncating {file_source} staging table: {type(e).__name__}: {str(e)}")
         raise e
 
@@ -794,6 +799,7 @@ def get_all_eligibility(request):
                 trans = db.connection.begin()
                 db.connection.execute(sm.Eligibility.__table__.insert(), records)
             except Exception as e:
+                trans.rollback()
                 logger.error(f"Error inserting {file_source} records: {type(e).__name__}: {str(e)}")
                 raise e
 
@@ -1084,22 +1090,29 @@ def get_ims_data(request):
         if records:
             # Truncate and load data
             db = sm.DatabaseConnection("Integration")
-
-            trans = db.connection.begin()
-            db.connection.execute(sm.sa.text("TRUNCATE TABLE [IMS].[AssetManagementListStaging]"))
-            trans.commit()
-            logger.info("IMS.AssetManagementListStaging truncated successfully")
+            try:
+                trans = db.connection.begin()
+                db.connection.execute(sm.sa.text("TRUNCATE TABLE [IMS].[AssetManagementListStaging]"))
+                trans.commit()
+                logger.info("IMS.AssetManagementListStaging truncated successfully")
+            except Exception as e:
+                trans.rollback()
+                logger.error(f"Error truncating {list_name} staging table: {type(e).__name__}: {str(e)}")
 
             # Bulk insert data (much faster than one-by-one)
             if records:
-                trans = db.connection.begin()
-                db.connection.execute(sm.AssetManagement.__table__.insert(), records)
-                trans.commit()
-            logger.info(f"{list_name} - Inserted {len(records)} records")
-
-            db.connection.close()
-        else:
-            logger.warning(f"{list_name} - No records to insert")
+                try:
+                    trans = db.connection.begin()
+                    db.connection.execute(sm.AssetManagement.__table__.insert(), records)
+                    trans.commit()
+                    logger.info(f"{list_name} - Inserted {len(records)} records")
+                except Exception as e:
+                    trans.rollback()
+                    logger.error(f"Error inserting {list_name} records: {type(e).__name__}: {str(e)}")
+                finally:
+                    db.connection.close()        
+            else:
+               logger.warning(f"{list_name} - No records to insert")
 
     except Exception as e:
         logger.error(f"Error in get_ims_data - {list_name}: {type(e).__name__}: {str(e)}")
@@ -1108,15 +1121,17 @@ def get_ims_data(request):
 
     try:
         db = sm.DatabaseConnection("Integration")
-        
         trans = db.connection.begin()
         db.connection.execute(sm.sa.text("EXECUTE IMS.LoadTables"))
         trans.commit()
         logger.info("IMS.Load Tables was successful")
     except Exception as e:
+        trans.rollback()
         logger.error(f"Error loading production tables: {type(e).__name__}: {str(e)}")
         raise e
-
+    finally:
+        db.connection.close()
+        
     return render(request, 'graph_connector_app/file_data.html', context)
 
 def debug(request):
