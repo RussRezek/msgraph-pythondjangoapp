@@ -386,3 +386,34 @@ def get_sharepoint_users_via_graph(token, site_host, site_path, target_list_name
 
     
     return {'value': all_users}
+
+
+def get_entra_users(token):
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Accept': 'application/json'
+    }
+
+    select_fields = (
+        'id,displayName,givenName,surname,mail,userPrincipalName,jobTitle,'
+        'department,officeLocation,mobilePhone,businessPhones,accountEnabled,'
+        'createdDateTime,employeeId,employeeType,onPremisesSamAccountName,'
+        'onPremisesUserPrincipalName,onPremisesDomainName,onPremisesSyncEnabled,'
+        'onPremisesLastSyncDateTime,usageLocation,preferredLanguage,country,'
+        'state,city,streetAddress,postalCode,companyName,userType,'
+        'externalUserState,lastPasswordChangeDateTime,proxyAddresses,'
+        'otherMails,passwordPolicies,assignedLicenses'
+    )
+
+    url = f'{GRAPH_URL}/users?$select={select_fields}&$top=999'
+    all_users = []
+
+    while url:
+        response = requests.get(url, headers=headers, timeout=100)
+        if response.status_code != 200:
+            return {'error': f'Could not get Entra users: {response.text}'}
+        data = response.json()
+        all_users.extend(data.get('value', []))
+        url = data.get('@odata.nextLink')
+
+    return {'value': all_users}
