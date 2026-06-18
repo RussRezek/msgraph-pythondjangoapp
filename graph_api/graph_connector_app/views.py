@@ -12,7 +12,7 @@ from graph_connector_app.auth_helper import (get_sign_in_flow, get_token,
                                   get_token_from_code, get_token_for_app,
                                   remove_user_and_token, store_user)
 from graph_connector_app.graph_helper import (create_event, get_calendar_events,
-                                   get_file_data, get_filelist,
+                                   get_entra_users, get_file_data, get_filelist,
                                    get_iana_from_windows, get_user,
                                    get_worksheets, get_sharepoint_users_via_graph)
 from graph_connector_app.sqlalchemy_models import sql_models as sm
@@ -1124,7 +1124,7 @@ def get_ims_data(request):
         trans = db.connection.begin()
         db.connection.execute(sm.sa.text("EXECUTE IMS.LoadTables"))
         trans.commit()
-        logger.info("IMS.Load Tables was successful")
+        logger.info("IMS.LoadTables was successful")
     except Exception as e:
         trans.rollback()
         logger.error(f"Error loading production tables: {type(e).__name__}: {str(e)}")
@@ -1133,6 +1133,125 @@ def get_ims_data(request):
         db.connection.close()
         
     return render(request, 'graph_connector_app/file_data.html', context)
+
+def get_entra_refresh(request):
+    context = initialize_context(request)
+    source = 'Entra Refresh'
+
+    try:
+        token = get_token_for_app(request)
+        logger.info(f"Token obtained: {token[:20] if token else 'None'}...")
+
+        entra_data = get_entra_users(token)
+
+        if 'error' in entra_data:
+            raise Exception(entra_data['error'])
+
+        records = []
+        for user in entra_data.get('value', []):
+            record = {
+                'Id':                          user.get('id'),
+                'DisplayName':                 user.get('displayName'),
+                'GivenName':                   user.get('givenName'),
+                'Surname':                     user.get('surname'),
+                'Mail':                        user.get('mail'),
+                'UserPrincipalName':           user.get('userPrincipalName'),
+                'JobTitle':                    user.get('jobTitle'),
+                'Department':                  user.get('department'),
+                'OfficeLocation':              user.get('officeLocation'),
+                'MobilePhone':                 user.get('mobilePhone'),
+                'BusinessPhones':              ','.join(user.get('businessPhones') or []) or None,
+                'AccountEnabled':              user.get('accountEnabled'),
+                'CreatedDateTime':             parser.parse(user['createdDateTime']) if user.get('createdDateTime') else None,
+                'EmployeeId':                  user.get('employeeId'),
+                'EmployeeType':                user.get('employeeType'),
+                'OnPremisesSamAccountName':    user.get('onPremisesSamAccountName'),
+                'OnPremisesUserPrincipalName': user.get('onPremisesUserPrincipalName'),
+                'OnPremisesDomainName':        user.get('onPremisesDomainName'),
+                'OnPremisesSyncEnabled':       user.get('onPremisesSyncEnabled'),
+                'OnPremisesLastSyncDateTime':  parser.parse(user['onPremisesLastSyncDateTime']) if user.get('onPremisesLastSyncDateTime') else None,
+                'UsageLocation':               user.get('usageLocation'),
+                'PreferredLanguage':           user.get('preferredLanguage'),
+                'Country':                     user.get('country'),
+                'State':                       user.get('state'),
+                'City':                        user.get('city'),
+                'StreetAddress':               user.get('streetAddress'),
+                'PostalCode':                  user.get('postalCode'),
+                'CompanyName':                 user.get('companyName'),
+                'UserType':                    user.get('userType'),
+                'ExternalUserState':           user.get('externalUserState'),
+                'LastPasswordChangeDateTime':  parser.parse(user['lastPasswordChangeDateTime']) if user.get('lastPasswordChangeDateTime') else None,
+                'ProxyAddresses':              ';'.join(user.get('proxyAddresses') or []) or None,
+                'OtherMails':                  ';'.join(user.get('otherMails') or []) or None,
+                'PasswordPolicies':            user.get('passwordPolicies'),
+                'AssignedLicenses':            ','.join([lic.get('skuId', '') for lic in (user.get('assignedLicenses') or [])]) or None,
+            }
+            records.append(record)
+
+        logger.info(f"{source} - Total records processed: {len(records)}")
+
+        display_records = []
+        for record in records:
+            display_records.append([
+                record.get('Id', ''),
+                record.get('DisplayName', ''),
+                record.get('Mail', ''),
+                record.get('UserPrincipalName', ''),
+                record.get('AccountEnabled', ''),
+                record.get('Department', ''),
+            ])
+        context['file_data'] = display_records
+
+        if records:
+            db = sm.DatabaseConnection("Integration")
+
+            try:
+                trans = db.connection.begin()
+                db.connection.execute(sm.sa.text("TRUNCATE TABLE [IMS].[EntraUsersStaging]"))
+                trans.commit()
+                logger.info("IMS.EntraUsersStaging truncated successfully")
+            except Exception as e:
+                trans.rollback()
+                logger.error(f"Error truncating {source} staging table: {type(e).__name__}: {str(e)}")
+                raise
+
+            try:
+                trans = db.connection.begin()
+                db.connection.execute(sm.EntraUsers.__table__.insert(), records)
+                trans.commit()
+                messages.success(request, f'{source} - {len(records)} users loaded successfully!')
+                logger.info(f"{source} - Inserted {len(records)} records")
+            except Exception as e:
+                trans.rollback()
+                logger.error(f"Error inserting {source} records: {type(e).__name__}: {str(e)}")
+                messages.error(request, f'Something went wrong inserting {source} data: {str(e)}. Contact {help_desk_email}.')
+                raise
+            finally:
+                db.connection.close()
+        else:
+            logger.warning(f"{source} - No records returned from Graph API")
+
+    except Exception as e:
+        logger.error(f"Error in get_entra_refresh: {type(e).__name__}: {str(e)}")
+        logger.error(traceback.format_exc())
+        context['errors'] = [{'message': f'Error fetching {source} data: {str(e)}'}]
+
+    try:
+        db = sm.DatabaseConnection("Integration")
+        trans = db.connection.begin()
+        db.connection.execute(sm.sa.text("EXECUTE IMS.LoadEntraTables"))
+        trans.commit()
+        logger.info("IMS.LoadEntraTables was successful")
+    except Exception as e:
+        trans.rollback()
+        logger.error(f"Error loading production tables: {type(e).__name__}: {str(e)}")
+        raise e
+    finally:
+        db.connection.close()
+
+
+    return render(request, 'graph_connector_app/file_data.html', context)
+
 
 def debug(request):
     context = initialize_context(request)

@@ -22,5 +22,6 @@ urlpatterns = [
   path('load_tables', views.load_tables, name='load_tables'),
   path('get_districts', views.get_districts, name='get_districts'),
   path('get_ims_data', views.get_ims_data, name='get_ims_data'),
+  path('get_entra_refresh', views.get_entra_refresh, name='get_entra_refresh'),
   path('debug', views.debug, name='debug')
 ]

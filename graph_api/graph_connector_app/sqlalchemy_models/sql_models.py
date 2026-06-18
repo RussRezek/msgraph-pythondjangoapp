@@ -310,6 +310,48 @@ class AssetManagement(Base):
 
 
 
+# build your EntraUsers class on existing `IMS.EntraUsersStaging` table
+class EntraUsers(Base):
+    """Entra (Azure AD) Users Model"""
+    __tablename__ = "EntraUsersStaging"
+    __table_args__ = {"schema": "IMS"}
+    id = Column("Id", String, primary_key=True)
+    display_name = Column("DisplayName", String)
+    given_name = Column("GivenName", String)
+    surname = Column("Surname", String)
+    mail = Column("Mail", String)
+    user_principal_name = Column("UserPrincipalName", String)
+    job_title = Column("JobTitle", String)
+    department = Column("Department", String)
+    office_location = Column("OfficeLocation", String)
+    mobile_phone = Column("MobilePhone", String)
+    business_phones = Column("BusinessPhones", String)
+    account_enabled = Column("AccountEnabled", Boolean)
+    created_date_time = Column("CreatedDateTime", DateTime)
+    employee_id = Column("EmployeeId", String)
+    employee_type = Column("EmployeeType", String)
+    on_premises_sam_account_name = Column("OnPremisesSamAccountName", String)
+    on_premises_user_principal_name = Column("OnPremisesUserPrincipalName", String)
+    on_premises_domain_name = Column("OnPremisesDomainName", String)
+    on_premises_sync_enabled = Column("OnPremisesSyncEnabled", Boolean)
+    on_premises_last_sync_date_time = Column("OnPremisesLastSyncDateTime", DateTime)
+    usage_location = Column("UsageLocation", String)
+    preferred_language = Column("PreferredLanguage", String)
+    country = Column("Country", String)
+    state = Column("State", String)
+    city = Column("City", String)
+    street_address = Column("StreetAddress", String)
+    postal_code = Column("PostalCode", String)
+    company_name = Column("CompanyName", String)
+    user_type = Column("UserType", String)
+    external_user_state = Column("ExternalUserState", String)
+    last_password_change_date_time = Column("LastPasswordChangeDateTime", DateTime)
+    proxy_addresses = Column("ProxyAddresses", String)
+    other_mails = Column("OtherMails", String)
+    password_policies = Column("PasswordPolicies", String)
+    assigned_licenses = Column("AssignedLicenses", String)
+
+
 class LoadProduction:
     """Load AI Production Tables"""
    
