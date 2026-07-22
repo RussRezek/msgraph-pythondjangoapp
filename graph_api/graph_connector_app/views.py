@@ -422,11 +422,11 @@ def get_all_math_iready(request):
             if isinstance(record['MidOnGradeLevelScaleScore'], str): #[MidOnGradeLevelScaleScore]
                 record['MidOnGradeLevelScaleScore'] = None
         
-        db = sm.db
+        domodb_conn = sm.DatabaseConnection("DomoDB")
 
         try:
-            trans = db.connection.begin()
-            db.connection.execute("TRUNCATE TABLE AI.MathIreadyStaging")
+            trans = domodb_conn.connection.begin()
+            domodb_conn.connection.execute("TRUNCATE TABLE AI.MathIreadyStaging")
             trans.commit()
         except Exception as e:
             trans.rollback()
@@ -435,8 +435,8 @@ def get_all_math_iready(request):
 
         if records:
             try:
-                trans = db.connection.begin()
-                db.connection.execute(sm.MathiReady.__table__.insert(), records)
+                trans = domodb_conn.connection.begin()
+                domodb_conn.connection.execute(sm.MathiReady.__table__.insert(), records)
                 trans.commit()
                 messages.success(request, f'{file_source} Data Successfully Imported!')
             except Exception as e:
@@ -623,11 +623,11 @@ def get_all_reading_iready(request):
             if isinstance(record['MidOnGradeLevelScaleScore'], str) or record['MidOnGradeLevelScaleScore'] == '': #MidOnGradeLevelScaleScore
                 record['MidOnGradeLevelScaleScore'] = None
 
-        db = sm.db
+        domodb_conn = sm.DatabaseConnection("DomoDB")
 
         try:
-            trans = db.connection.begin()
-            db.connection.execute("TRUNCATE TABLE AI.ReadingIreadyStaging")
+            trans = domodb_conn.connection.begin()
+            domodb_conn.connection.execute("TRUNCATE TABLE AI.ReadingIreadyStaging")
             trans.commit()
         except Exception as e:
             trans.rollback()    
@@ -637,8 +637,8 @@ def get_all_reading_iready(request):
 
         if records:
             try:
-                trans = db.connection.begin()
-                db.connection.execute(sm.ReadingiReady.__table__.insert(), records)
+                trans = domodb_conn.connection.begin()
+                domodb_conn.connection.execute(sm.ReadingiReady.__table__.insert(), records)
                 trans.commit()
                 messages.success(request, f'{file_source} Data Successfully Imported!')
             except Exception as e:
@@ -773,11 +773,11 @@ def get_all_eligibility(request):
             record[14] = excel_date_to_python(record[14]) 
 
 
-    db = sm.db
+    domodb_conn = sm.DatabaseConnection("DomoDB")
 
     try:
-        trans = db.connection.begin()
-        db.connection.execute("TRUNCATE TABLE AI.EligibilityStaging")
+        trans = domodb_conn.connection.begin()
+        domodb_conn.connection.execute("TRUNCATE TABLE AI.EligibilityStaging")
         trans.commit() 
     except Exception as e:
         trans.rollback()
@@ -796,8 +796,8 @@ def get_all_eligibility(request):
 
         if records:
             try:                
-                trans = db.connection.begin()
-                db.connection.execute(sm.Eligibility.__table__.insert(), records)
+                trans = domodb_conn.connection.begin()
+                domodb_conn.connection.execute(sm.Eligibility.__table__.insert(), records)
             except Exception as e:
                 trans.rollback()
                 logger.error(f"Error inserting {file_source} records: {type(e).__name__}: {str(e)}")
@@ -808,7 +808,7 @@ def get_all_eligibility(request):
 def load_tables(request):
 
     context = initialize_context(request)
-    db = sm.db
+    domodb_conn = sm.DatabaseConnection("DomoDB")
 
     lp = sm.LoadProduction()
     lp.load_production_tables()
@@ -975,21 +975,21 @@ def get_ims_data(request):
         # Only insert to database if we have records
         if records:
             # Truncate and load data
-            db = sm.DatabaseConnection("Integration")
+            integration_db_conn = sm.DatabaseConnection("Integration")
 
-            trans = db.connection.begin()
-            db.connection.execute(sm.sa.text("TRUNCATE TABLE [IMS].[UserInformationListStaging]"))
+            trans = integration_db_conn.connection.begin()
+            integration_db_conn.connection.execute(sm.sa.text("TRUNCATE TABLE [IMS].[UserInformationListStaging]"))
             trans.commit()
             logger.info(f"{list_name.replace(' ', '')}Staging truncated successfully")
 
             # Bulk insert data (much faster than one-by-one)
             if records:
-                trans = db.connection.begin()
-                db.connection.execute(sm.UserInformation.__table__.insert(), records)
+                trans = integration_db_conn.connection.begin()
+                integration_db_conn.connection.execute(sm.UserInformation.__table__.insert(), records)
                 trans.commit()
             logger.info(f"{list_name.replace(' ', '')} - Inserted {len(records)} records")
 
-            db.connection.close()
+            integration_db_conn.connection.close()
         else:
             logger.warning(f"{list_name} - No records to insert")
 
@@ -1089,10 +1089,10 @@ def get_ims_data(request):
         # Only insert to database if we have records
         if records:
             # Truncate and load data
-            db = sm.DatabaseConnection("Integration")
+            integration_db_conn = sm.DatabaseConnection("Integration")
             try:
-                trans = db.connection.begin()
-                db.connection.execute(sm.sa.text("TRUNCATE TABLE [IMS].[AssetManagementListStaging]"))
+                trans = integration_db_conn.connection.begin()
+                integration_db_conn.connection.execute(sm.sa.text("TRUNCATE TABLE [IMS].[AssetManagementListStaging]"))
                 trans.commit()
                 logger.info("IMS.AssetManagementListStaging truncated successfully")
             except Exception as e:
@@ -1102,15 +1102,15 @@ def get_ims_data(request):
             # Bulk insert data (much faster than one-by-one)
             if records:
                 try:
-                    trans = db.connection.begin()
-                    db.connection.execute(sm.AssetManagement.__table__.insert(), records)
+                    trans = integration_db_conn.connection.begin()
+                    integration_db_conn.connection.execute(sm.AssetManagement.__table__.insert(), records)
                     trans.commit()
                     logger.info(f"{list_name} - Inserted {len(records)} records")
                 except Exception as e:
                     trans.rollback()
                     logger.error(f"Error inserting {list_name} records: {type(e).__name__}: {str(e)}")
                 finally:
-                    db.connection.close()        
+                    integration_db_conn.connection.close()        
             else:
                logger.warning(f"{list_name} - No records to insert")
 
@@ -1120,9 +1120,9 @@ def get_ims_data(request):
         context['errors'] = [{'message': f'Error fetching {list_name} data: {str(e)}'}]
 
     try:
-        db = sm.DatabaseConnection("Integration")
-        trans = db.connection.begin()
-        db.connection.execute(sm.sa.text("EXECUTE IMS.LoadTables"))
+        integration_db_conn = sm.DatabaseConnection("Integration")
+        trans = integration_db_conn.connection.begin()
+        integration_db_conn.connection.execute(sm.sa.text("EXECUTE IMS.LoadTables"))
         trans.commit()
         logger.info("IMS.LoadTables was successful")
     except Exception as e:
@@ -1130,7 +1130,7 @@ def get_ims_data(request):
         logger.error(f"Error loading production tables: {type(e).__name__}: {str(e)}")
         raise e
     finally:
-        db.connection.close()
+        integration_db_conn.connection.close()
         
     return render(request, 'graph_connector_app/file_data.html', context)
 
@@ -1203,11 +1203,11 @@ def get_entra_refresh(request):
         context['file_data'] = display_records
 
         if records:
-            db = sm.DatabaseConnection("Integration")
+            integration_db_conn = sm.DatabaseConnection("Integration")
 
             try:
-                trans = db.connection.begin()
-                db.connection.execute(sm.sa.text("TRUNCATE TABLE [IMS].[EntraUsersStaging]"))
+                trans = integration_db_conn.connection.begin()
+                integration_db_conn.connection.execute(sm.sa.text("TRUNCATE TABLE [IMS].[EntraUsersStaging]"))
                 trans.commit()
                 logger.info("IMS.EntraUsersStaging truncated successfully")
             except Exception as e:
@@ -1216,8 +1216,8 @@ def get_entra_refresh(request):
                 raise
 
             try:
-                trans = db.connection.begin()
-                db.connection.execute(sm.EntraUsers.__table__.insert(), records)
+                trans = integration_db_conn.connection.begin()
+                integration_db_conn.connection.execute(sm.EntraUsers.__table__.insert(), records)
                 trans.commit()
                 messages.success(request, f'{source} - {len(records)} users loaded successfully!')
                 logger.info(f"{source} - Inserted {len(records)} records")
@@ -1227,7 +1227,37 @@ def get_entra_refresh(request):
                 messages.error(request, f'Something went wrong inserting {source} data: {str(e)}. Contact {help_desk_email}.')
                 raise
             finally:
-                db.connection.close()
+                integration_db_conn.connection.close()
+
+            azure_db_conn = sm.DatabaseConnection("AzureIntDB")
+            ops_columns = {c.name for c in sm.EntraUsers_Ops.__table__.columns}
+            ops_records = [
+                {k: v for k, v in record.items() if k in ops_columns}
+                for record in records
+            ]
+
+            try:
+                trans = azure_db_conn.connection.begin()
+                azure_db_conn.connection.execute(sm.sa.text("TRUNCATE TABLE [OPS].[EntraUsersStaging]"))
+                trans.commit()
+                logger.info("OPS.EntraUsersStaging truncated successfully")
+            except Exception as e:
+                trans.rollback()
+                logger.error(f"Error truncating {source} ops table: {type(e).__name__}: {str(e)}")
+                raise
+
+            try:
+                trans = azure_db_conn.connection.begin()
+                azure_db_conn.connection.execute(sm.EntraUsers_Ops.__table__.insert(), ops_records)
+                trans.commit()
+                logger.info(f"{source} - Inserted {len(ops_records)} records into OPS.EntraUsersStaging")
+            except Exception as e:
+                trans.rollback()
+                logger.error(f"Error inserting {source} ops records: {type(e).__name__}: {str(e)}")
+                messages.error(request, f'Something went wrong inserting {source} ops data: {str(e)}. Contact {help_desk_email}.')
+                raise
+            finally:
+                azure_db_conn.connection.close()
         else:
             logger.warning(f"{source} - No records returned from Graph API")
 
@@ -1237,9 +1267,9 @@ def get_entra_refresh(request):
         context['errors'] = [{'message': f'Error fetching {source} data: {str(e)}'}]
 
     try:
-        db = sm.DatabaseConnection("Integration")
-        trans = db.connection.begin()
-        db.connection.execute(sm.sa.text("EXECUTE IMS.LoadEntraTables"))
+        integration_db_conn = sm.DatabaseConnection("Integration")
+        trans = integration_db_conn.connection.begin()
+        integration_db_conn.connection.execute(sm.sa.text("EXECUTE IMS.LoadEntraTables"))
         trans.commit()
         logger.info("IMS.LoadEntraTables was successful")
     except Exception as e:
@@ -1247,7 +1277,20 @@ def get_entra_refresh(request):
         logger.error(f"Error loading production tables: {type(e).__name__}: {str(e)}")
         raise e
     finally:
-        db.connection.close()
+        integration_db_conn.connection.close()
+
+    try:
+        azure_db_conn = sm.DatabaseConnection("AzureIntDB")
+        trans = azure_db_conn.connection.begin()
+        azure_db_conn.connection.execute(sm.sa.text("EXECUTE OPS.LoadEntraTables"))
+        trans.commit()
+        logger.info("IMS.LoadEntraTables was successful on AzureIntDB")
+    except Exception as e:
+        trans.rollback()
+        logger.error(f"Error loading Azure production tables: {type(e).__name__}: {str(e)}")
+        raise e
+    finally:
+        azure_db_conn.connection.close()
 
 
     return render(request, 'graph_connector_app/file_data.html', context)

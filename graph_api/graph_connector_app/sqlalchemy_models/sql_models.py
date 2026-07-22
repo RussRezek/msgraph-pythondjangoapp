@@ -1,57 +1,58 @@
-import configparser
 import os
+import environ
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Integer, Column, String, Date, DateTime, Numeric, Boolean
 from pathlib import Path
 
 
-#Import Config Settings
-Config = configparser.ConfigParser()
-
-#CONFIG
-working_directory = os.getcwd()
-Config.read('./settings.ini')
+# Load configuration from the environment (.env). In Docker these are injected by
+# docker-compose's env_file; for local runs load secrets/.env explicitly.
+env = environ.Env()
+_secrets_env = Path(__file__).resolve().parents[2] / 'secrets' / '.env'
+if _secrets_env.exists():
+    env.read_env(_secrets_env)
 
 class DatabaseConnection:
     """Connect to LEARN Behavioral SQL Server Database"""
-    _db_connection = None
-    _db_cur = None
-
-    def __init__(self, section: str = "DomoDB"):
-        cfg = Config[section]
+    def __init__(self, section: str = "DOMODB"):
+        # Use the provided section value as the .env prefix (case-insensitive).
+        prefix = section.upper()
+        username = env(f'{prefix}_USERNAME')
+        password = env(f'{prefix}_PASSWORD')
+        server = env(f'{prefix}_SERVER')
+        port = env(f'{prefix}_PORT')
+        database = env(f'{prefix}_DATABASE')
+        driver = env(f'{prefix}_DRIVER')
         self.connectionstring = (
-            f"mssql+pyodbc://{cfg['username']}:{cfg['password']}@"
-            f"{cfg['server']}:{cfg['port']}/{cfg['database']}"
-            f"?Encrypt=yes&TrustServerCertificate=yes&{cfg['driver']}"
+            f"mssql+pyodbc://{username}:{password}@"
+            f"{server}:{port}/{database}"
+            f"?Encrypt=yes&TrustServerCertificate=yes&{driver}"
         )
-        # Enable fast_executemany to speed up bulk inserts (pyodbc-specific optimization)
-        self.engine = sa.create_engine(
-            self.connectionstring,
-            fast_executemany=True,
-        )
-        self.connection = self.engine.connect()
+        self._engine = None
+        self._connection = None
+
+    @property
+    def engine(self):
+        if self._engine is None:
+            # Lazily initialize engine to avoid import-time DB dependency.
+            self._engine = sa.create_engine(
+                self.connectionstring,
+                fast_executemany=True,
+                pool_pre_ping=True,
+            )
+        return self._engine
+
+    @property
+    def connection(self):
+        if self._connection is None or self._connection.closed:
+            # Open connection on demand so module imports do not block web requests.
+            self._connection = self.engine.connect()
+        return self._connection
 
 
 # define declarative base
 Base = declarative_base()
-
-# create DomoIntegration engine
-db = DatabaseConnection("DomoDB")
-
-# reflect current database engine to metadata
-# metadata = sa.MetaData(db.engine)
-metadata = sa.MetaData(db.engine)
-metadata.reflect()
-
-# create Integration engine
-db_integration = DatabaseConnection("Integration")
-
-# reflect current database engine to metadata
-# metadata = sa.MetaData(db_integration.engine)
-metadata = sa.MetaData(db_integration.engine)
-metadata.reflect()
-
 
 
 # build your ReadingiReady class on existing `AI.ReadingiReadyStaging` table
@@ -351,15 +352,46 @@ class EntraUsers(Base):
     password_policies = Column("PasswordPolicies", String)
     assigned_licenses = Column("AssignedLicenses", String)
 
+# build your EntraUsers class on existing `OPS.EntraUsers` table
+class EntraUsers_Ops(Base):
+    """Entra (Azure AD) Users Model"""
+    __tablename__ = "EntraUsersStaging"
+    __table_args__ = {"schema": "OPS"}
+    id = Column("Id", String, primary_key=True)
+    display_name = Column("DisplayName", String)
+    given_name = Column("GivenName", String)
+    surname = Column("Surname", String)
+    mail = Column("Mail", String)
+    user_principal_name = Column("UserPrincipalName", String)
+    job_title = Column("JobTitle", String)
+    department = Column("Department", String)
+    office_location = Column("OfficeLocation", String)
+    account_enabled = Column("AccountEnabled", Boolean)
+    created_date_time = Column("CreatedDateTime", DateTime)
+    employee_id = Column("EmployeeId", String)
+    employee_type = Column("EmployeeType", String)
+    company_name = Column("CompanyName", String)
+    user_type = Column("UserType", String)
+    external_user_state = Column("ExternalUserState", String)
+    last_password_change_date_time = Column("LastPasswordChangeDateTime", DateTime)
+    proxy_addresses = Column("ProxyAddresses", String)
+    other_mails = Column("OtherMails", String)
+    password_policies = Column("PasswordPolicies", String)
+    assigned_licenses = Column("AssignedLicenses", String)
+
+
+
 
 class LoadProduction:
     """Load AI Production Tables"""
    
     def load_production_tables(self,option=3):
 
-        db = DatabaseConnection()
-        
-        trans = db.connection.begin()
-        db.connection.execute(f"EXEC AI.AILoadTables @Option = {option}")
+        domodb_conn = DatabaseConnection("DomoDB")
+
+        trans = domodb_conn.connection.begin()
+        domodb_conn.connection.execute(f"EXEC AI.AILoadTables @Option = {option}")
         trans.commit()
+
+
 
