@@ -105,7 +105,7 @@ venv.bak/
 
 # OAuth settings
 oauth_settings.yml
-oath_settings_ORIGS.yml
+oauth_settings_ORIG.yml
 
 #SQL Achelmy Settings
 settings.ini
@@ -118,3 +118,6 @@ settings.ini
 
 #Chat
 Chat/
+
+# TLS private key (mounted into nginx by docker-compose.yml)
+localhost.key
